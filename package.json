@@ -1,0 +1,28 @@
+{
+  "name": "node-test",
+  "version": "1.0.0",
+  "description": "Dockerized TS Node/Express REST API with PostgreSQL database.",
+  "repository": "git@bitbucket.org:cdomizi/node-test.git",
+  "author": "Cesare Domizi <domizicesare@gmail.com>",
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "scripts": {
+    "build": "rimraf dist && npx tsc",
+    "prestart": "yarn build",
+    "start": "node dist/index.js",
+    "predev": "yarn build",
+    "dev": "concurrently \"npx tsc -w\" \"nodemon dist/index.js\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1",
+    "nodemon": "^2.0.22",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.1.4",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "rimraf": "^5.0.0"
+  }
+}
