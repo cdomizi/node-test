@@ -3,6 +3,9 @@
 /.pnp
 .pnp.js
 
+# compiled files
+dist/**/*
+
 # misc
 .env.development.local
 .prettierignore

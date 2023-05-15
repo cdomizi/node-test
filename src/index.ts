@@ -1,12 +1,13 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 
+// Configure dotenv for importing environment variables
 dotenv.config();
 
-const app = express();
+const app: Express = express();
 const port = process.env.PORT || 4000;
 
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
   res.send("<h1>Node/Express App on TypeScript</h1>");
 });
 
