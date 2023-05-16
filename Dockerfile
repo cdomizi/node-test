@@ -1,7 +1,7 @@
 FROM node:18-alpine AS base
 
 # Create root directory
-WORKDIR /src
+WORKDIR /server
 
 COPY package.json yarn.lock ./
 # Install dependencies with Yarn
