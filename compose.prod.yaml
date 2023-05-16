@@ -1,0 +1,12 @@
+services:
+  node-server:
+    container_name: node-server
+    image: cesaredomizi/node-server:0.0.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - 4000
+    ports:
+      - 4000:4000
+    command: yarn start

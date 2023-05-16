@@ -1,19 +1,18 @@
 # dependencies
 /node_modules
-/.pnp
-.pnp.js
 
 # compiled files
 dist/**/*
 
 # misc
 .env.development.local
+
 .prettierignore
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# VSCode Workspace
+# VSCode
 .vscode
 *.code-workspace
