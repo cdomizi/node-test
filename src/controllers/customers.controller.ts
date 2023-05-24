@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import query from "../db";
 
 const getAllCustomers = async (req: Request, res: Response) => {
@@ -10,13 +10,19 @@ const getAllCustomers = async (req: Request, res: Response) => {
   }
 };
 
-const getCustomer = async (req: Request, res: Response) => {
-  const { id } = req.params;
+const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const { id } = req.params;
     const { rows } = await query("SELECT * FROM customers WHERE id = $1", [id]);
-    res.send(rows[0]);
-  } catch (error) {
-    console.error(error);
+    if (!rows.length) {
+      const error = new Error(`Customer with id ${id} not found.`);
+      res.status(404);
+      throw error;
+    } else {
+      res.send(rows[0]);
+    }
+  } catch (e) {
+    next(e);
   }
 };
 
@@ -43,7 +49,6 @@ const updateCustomer = async (req: Request, res: Response) => {
     );
     res.send(rows[0]);
   } catch (error) {
-    if (error instanceof Error) throw new Error(error.message);
     console.error(error);
   }
 };
