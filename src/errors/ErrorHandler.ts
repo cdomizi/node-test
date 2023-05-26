@@ -10,10 +10,10 @@ const ErrorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars
 ) => {
   if (!err || err.statusCode === 404) {
-    const message = `404: Invalid path "${req.path}"`;
+    const message = err.message ?? `404: Invalid path "${req.path}"`;
 
     console.error(message);
     res.status(404).send(message);

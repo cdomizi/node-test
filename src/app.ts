@@ -6,7 +6,7 @@ import cors from "cors";
 import corsOptions from "./config/corsOptions";
 
 import routes from "./routes";
-import ErrorHandler from "./ErrorHandler";
+import ErrorHandler from "./errors/ErrorHandler";
 
 const app = express();
 

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import BasicError from "../errors/BasicError";
 import query from "../db";
 
 const getAllCustomers = async (req: Request, res: Response) => {
@@ -15,14 +16,14 @@ const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const { rows } = await query("SELECT * FROM customers WHERE id = $1", [id]);
     if (!rows.length) {
-      const error = new Error(`Customer with id ${id} not found.`);
-      res.status(404);
+      const error = new BasicError(`Customer with id ${id} not found.`, 404);
+      console.log(error);
       throw error;
     } else {
       res.send(rows[0]);
     }
-  } catch (e) {
-    next(e);
+  } catch (err) {
+    next(err);
   }
 };
 
