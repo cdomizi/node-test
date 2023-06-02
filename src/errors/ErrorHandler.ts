@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 
 interface Error {
   statusCode?: number;
@@ -12,18 +12,14 @@ const ErrorHandler = (
   res: Response,
   next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars
 ) => {
-  if (!err || err.statusCode === 404) {
-    const message = err.message ?? `404: Invalid path "${req.path}"`;
+  const error = {
+    statusCode: err?.statusCode || 500,
+    message: err?.message || "Internal Server Error",
+  };
 
-    console.error(message);
-    res.status(404).send(message);
-  } else {
-    const statusCode = err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    console.error(`${statusCode}: ${message}`, err.stack);
-    res.status(statusCode).send(message);
-  }
+  console.error(`${error.statusCode}: ${error.message}`);
+  console.error(err.stack);
+  return res.status(error.statusCode).send(error.message);
 };
 
 export default ErrorHandler;

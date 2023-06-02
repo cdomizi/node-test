@@ -1,8 +1,8 @@
-class BasicError extends Error {
+class CustomError extends Error {
   stack: string | undefined;
-  statusCode: number | undefined;
+  statusCode: number;
 
-  constructor(message?: string, statusCode?: number) {
+  constructor(message?: string, statusCode = 500) {
     super(message);
 
     Object.setPrototypeOf(this, Error.prototype);
@@ -14,4 +14,4 @@ class BasicError extends Error {
   }
 }
 
-export default BasicError;
+export default CustomError;
