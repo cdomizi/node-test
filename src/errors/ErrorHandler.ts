@@ -19,7 +19,7 @@ const ErrorHandler = (
 
   console.error(`${error.statusCode}: ${error.message}`);
   console.error(err.stack);
-  return res.status(error.statusCode).send(error.message);
+  return res.status(error.statusCode).send({ message: error.message });
 };
 
 export default ErrorHandler;

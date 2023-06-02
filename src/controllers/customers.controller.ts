@@ -14,10 +14,6 @@ const getAllCustomers = async (
     const allCustomers = await customersClient.findMany();
     res.status(200).send(allCustomers);
   } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      const error = PrismaErrorHandler(err);
-      next(error);
-    }
     next(err);
   }
 };
@@ -35,12 +31,10 @@ const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
         400
       );
       console.error(error);
-      res.status(error.statusCode).send(error.message);
+      res.status(error.statusCode).send({ message: error.message });
     } else res.status(200).send(customer);
   } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      PrismaErrorHandler(err, req, res, next);
-    } else next(err);
+    next(err);
   }
 };
 
@@ -62,9 +56,7 @@ const createCustomer = async (
 
     res.status(201).send(customer);
   } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      PrismaErrorHandler(err, req, res, next);
-    } else next(err);
+    next(err);
   }
 };
 
@@ -107,7 +99,6 @@ const deleteCustomer = async (
 
     res.status(200).send(customer);
   } catch (err) {
-    console.log(typeof err);
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       PrismaErrorHandler(err, req, res, next);
     } else next(err);

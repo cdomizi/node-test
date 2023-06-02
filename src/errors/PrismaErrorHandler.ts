@@ -33,7 +33,7 @@ const PrismaErrorHandler = (
 ) => {
   const error = handlePrismaError(err);
   console.error(error);
-  res?.status(error.statusCode).send(error?.message);
+  res?.status(error.statusCode).send({ message: error?.message });
 };
 
 export default PrismaErrorHandler;
