@@ -1,16 +1,48 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model customers {
-  id        Int     @id @default(autoincrement())
-  firstname String? @db.VarChar(255)
-  lastname  String? @db.VarChar(255)
-  address   String? @db.VarChar(255)
-  email     String? @db.VarChar(255)
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id                 Int       @id @default(autoincrement())
+  title              String    @unique @db.VarChar(255)
+  brand              String?   @db.VarChar(255)
+  category           String?   @db.VarChar(255)
+  price              Decimal   @default(0.00) @db.Money
+  discountPercentage Decimal?  @default(0.00) @db.Decimal(5, 2)
+  stock              Int       @default(0)
+  thumbnail          String?   @db.VarChar(255)
+  images             String[]
+  invoices           Invoice[]
+
+  @@map("products")
+}
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  firstName String    @db.VarChar(255)
+  lastName  String    @db.VarChar(255)
+  email     String    @unique
+  address   String    @db.VarChar(255)
+  invoices  Invoice[]
+
+  @@map("customers")
+}
+
+model Invoice {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  paymentDue DateTime  @default(dbgenerated("NOW() + INTERVAL '30 days'"))
+  customer   Customer  @relation(fields: [customerId], references: [id])
+  customerId Int
+  paid       Boolean   @default(false)
+  invoice_id String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  products   Product[]
+
+  @@map("invoices")
 }

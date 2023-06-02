@@ -3,7 +3,7 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import PrismaErrorHandler from "../errors/PrismaErrorHandler";
 import CustomError from "../errors/CustomError";
 
-const customersClient = new PrismaClient().customers;
+const customersClient = new PrismaClient().customer;
 
 const getAllCustomers = async (
   req: Request,
@@ -43,12 +43,12 @@ const createCustomer = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { firstname, lastname, address, email } = req.body;
+  const { firstName, lastName, address, email } = req.body;
   try {
     const customer = await customersClient.create({
       data: {
-        firstname,
-        lastname,
+        firstName,
+        lastName,
         address,
         email,
       },
@@ -66,13 +66,13 @@ const updateCustomer = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-  const { firstname, lastname, address, email } = req.body;
+  const { firstName, lastname: lastName, address, email } = req.body;
   try {
     const customer = await customersClient.update({
       where: { id: parseInt(id) },
       data: {
-        firstname,
-        lastname,
+        firstName,
+        lastName,
         address,
         email,
       },
