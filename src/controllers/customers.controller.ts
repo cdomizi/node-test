@@ -43,7 +43,7 @@ const createCustomer = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { firstName, lastName, address, email } = req.body;
+  const { firstName, lastName, address, email, invoices } = req.body;
   try {
     const customer = await customersClient.create({
       data: {
@@ -51,6 +51,7 @@ const createCustomer = async (
         lastName,
         address,
         email,
+        invoices: invoices,
       },
     });
 

@@ -7,6 +7,7 @@ CREATE TABLE "products" (
     "price" MONEY NOT NULL DEFAULT 0.00,
     "discountPercentage" DECIMAL(5,2) DEFAULT 0.00,
     "stock" INTEGER NOT NULL DEFAULT 0,
+    "description" VARCHAR(255),
     "thumbnail" VARCHAR(255),
     "images" TEXT[],
 
