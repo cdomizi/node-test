@@ -3,59 +3,75 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import PrismaErrorHandler from "../errors/PrismaErrorHandler";
 import CustomError from "../errors/CustomError";
 
-const customerClient = new PrismaClient().customer;
+const productClient = new PrismaClient().product;
 
-const getAllCustomers = async (
+const getAllProducts = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const allCustomers = await customerClient.findMany();
-    res.status(200).send(allCustomers);
+    const allProducts = await productClient.findMany();
+    res.status(200).send(allProducts);
   } catch (err) {
     next(err);
   }
 };
 
-const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
+const getProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const customer = await customerClient.findUnique({
+    const product = await productClient.findUnique({
       where: { id: parseInt(id) },
     });
 
-    if (!customer) {
+    if (!product) {
       const error = new CustomError(
-        `Customer with id ${id} does not exist.`,
+        `Product with id ${id} does not exist.`,
         400
       );
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });
-    } else res.status(200).send(customer);
+    } else res.status(200).send(product);
   } catch (err) {
     next(err);
   }
 };
 
-const createCustomer = async (
+const createProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { firstName, lastName, address, email, invoices } = req.body;
+  const {
+    title,
+    brand,
+    category,
+    price,
+    discountPercentage,
+    stock,
+    description,
+    thumbnail,
+    images,
+    invoices,
+  } = req.body;
   try {
-    const customer = await customerClient.create({
+    const product = await productClient.create({
       data: {
-        firstName,
-        lastName,
-        address,
-        email,
+        title,
+        brand,
+        category,
+        price,
+        discountPercentage,
+        stock,
+        description,
+        thumbnail,
+        images,
         invoices,
       },
     });
 
-    res.status(201).send(customer);
+    res.status(201).send(product);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       PrismaErrorHandler(err, req, res, next);
@@ -63,26 +79,42 @@ const createCustomer = async (
   }
 };
 
-const updateCustomer = async (
+const updateProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const { id } = req.params;
-  const { firstName, lastName, address, email, invoices } = req.body;
+  const {
+    title,
+    brand,
+    category,
+    price,
+    discountPercentage,
+    stock,
+    description,
+    thumbnail,
+    images,
+    invoices,
+  } = req.body;
   try {
-    const customer = await customerClient.update({
+    const product = await productClient.update({
       where: { id: parseInt(id) },
       data: {
-        firstName,
-        lastName,
-        address,
-        email,
+        title,
+        brand,
+        category,
+        price,
+        discountPercentage,
+        stock,
+        description,
+        thumbnail,
+        images,
         invoices,
       },
     });
 
-    res.status(200).send(customer);
+    res.status(200).send(product);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       PrismaErrorHandler(err, req, res, next);
@@ -90,18 +122,18 @@ const updateCustomer = async (
   }
 };
 
-const deleteCustomer = async (
+const deleteProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const { id } = req.params;
   try {
-    const customer = await customerClient.delete({
+    const product = await productClient.delete({
       where: { id: parseInt(id) },
     });
 
-    res.status(200).send(customer);
+    res.status(200).send(product);
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       PrismaErrorHandler(err, req, res, next);
@@ -110,9 +142,9 @@ const deleteCustomer = async (
 };
 
 export {
-  getAllCustomers,
-  getCustomer,
-  createCustomer,
-  updateCustomer,
-  deleteCustomer,
+  getAllProducts,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 };

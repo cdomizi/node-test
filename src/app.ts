@@ -15,7 +15,7 @@ app.use(cors(corsOptions));
 app.use(json());
 app.use(cookieParser());
 
-app.use("/api", routes);
+app.use("/api/v1", routes);
 
 app.get("/", (req, res) => {
   res.send("Node/Express REST API");
