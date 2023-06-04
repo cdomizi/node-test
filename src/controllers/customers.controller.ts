@@ -57,7 +57,9 @@ const createCustomer = async (
 
     res.status(201).send(customer);
   } catch (err) {
-    next(err);
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      PrismaErrorHandler(err, req, res, next);
+    } else next(err);
   }
 };
 
@@ -67,7 +69,7 @@ const updateCustomer = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-  const { firstName, lastname: lastName, address, email } = req.body;
+  const { firstName, lastName, address, email, invoices } = req.body;
   try {
     const customer = await customersClient.update({
       where: { id: parseInt(id) },
@@ -76,6 +78,7 @@ const updateCustomer = async (
         lastName,
         address,
         email,
+        invoices,
       },
     });
 
