@@ -53,7 +53,6 @@ const createProduct = async (
     description,
     thumbnail,
     images,
-    invoices,
   } = req.body;
   try {
     const product = await productClient.create({
@@ -67,7 +66,8 @@ const createProduct = async (
         description,
         thumbnail,
         images,
-        invoices,
+        // Prevent adding invoices from Customer
+        invoices: {},
       },
     });
 
@@ -95,7 +95,6 @@ const updateProduct = async (
     description,
     thumbnail,
     images,
-    invoices,
   } = req.body;
   try {
     const product = await productClient.update({
@@ -110,7 +109,8 @@ const updateProduct = async (
         description,
         thumbnail,
         images,
-        invoices,
+        // Prevent adding invoices from Customer
+        invoices: {},
       },
     });
 

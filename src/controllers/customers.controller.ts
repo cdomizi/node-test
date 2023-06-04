@@ -43,7 +43,7 @@ const createCustomer = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { firstName, lastName, address, email, invoices } = req.body;
+  const { firstName, lastName, address, email } = req.body;
   try {
     const customer = await customerClient.create({
       data: {
@@ -51,7 +51,8 @@ const createCustomer = async (
         lastName,
         address,
         email,
-        invoices,
+        // Prevent adding invoices from Customer
+        invoices: {},
       },
     });
 
@@ -69,7 +70,7 @@ const updateCustomer = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-  const { firstName, lastName, address, email, invoices } = req.body;
+  const { firstName, lastName, address, email } = req.body;
   try {
     const customer = await customerClient.update({
       where: { id: parseInt(id) },
@@ -78,7 +79,8 @@ const updateCustomer = async (
         lastName,
         address,
         email,
-        invoices,
+        // Prevent adding invoices from Customer
+        invoices: {},
       },
     });
 
