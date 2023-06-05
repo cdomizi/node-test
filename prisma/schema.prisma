@@ -14,6 +14,7 @@ model Product {
   category           String?   @db.VarChar(255)
   price              Decimal   @default(0.00) @db.Money
   discountPercentage Decimal?  @default(0.00) @db.Decimal(5, 2)
+  rating             Decimal?  @db.Decimal(3, 2)
   stock              Int       @default(0)
   description        String?   @db.VarChar(255)
   thumbnail          String?   @db.VarChar(255)
