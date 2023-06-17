@@ -6,7 +6,7 @@ import cors from "cors";
 import corsOptions from "./config/corsOptions";
 
 import routes from "./routes";
-import ErrorHandler from "./errors/ErrorHandler";
+import PrismaErrorHandler from "./errors/PrismaErrorHandler";
 
 const app = express();
 
@@ -27,6 +27,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Error handler
-app.use(ErrorHandler);
+app.use(PrismaErrorHandler);
 
 export default app;

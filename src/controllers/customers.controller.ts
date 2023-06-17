@@ -28,7 +28,7 @@ const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
     if (!customer) {
       const error = new CustomError(
         `Customer with id ${id} does not exist.`,
-        400
+        404
       );
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });

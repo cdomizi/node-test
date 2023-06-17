@@ -26,14 +26,18 @@ const handlePrismaError = (err: Prisma.PrismaClientKnownRequestError) => {
 };
 
 const PrismaErrorHandler = (
-  err: Prisma.PrismaClientKnownRequestError,
+  err: Prisma.PrismaClientKnownRequestError | Error,
   req?: Request,
   res?: Response,
   next?: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars
 ) => {
-  const error = handlePrismaError(err);
+  const error =
+    err instanceof Prisma.PrismaClientKnownRequestError
+      ? handlePrismaError(err)
+      : new CustomError();
+
   console.error(error);
-  res?.status(error.statusCode).send({ message: error?.message });
+  res?.status(error.statusCode).send(error.message);
 };
 
 export default PrismaErrorHandler;

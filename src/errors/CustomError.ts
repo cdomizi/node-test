@@ -1,4 +1,5 @@
 class CustomError extends Error {
+  error: string | undefined;
   stack: string | undefined;
   statusCode: number;
 
@@ -7,10 +8,6 @@ class CustomError extends Error {
 
     Object.setPrototypeOf(this, Error.prototype);
     this.statusCode = statusCode;
-  }
-
-  getErrorMessage() {
-    return "Unexpected Error: " + this.message;
   }
 }
 
