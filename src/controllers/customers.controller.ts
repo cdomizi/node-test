@@ -51,8 +51,8 @@ const createCustomer = async (
         lastName,
         address,
         email,
-        // Prevent adding invoices from Customer
-        invoices: {},
+        // Prevent adding orders from Customer
+        orders: {},
       },
     });
 
@@ -79,8 +79,6 @@ const updateCustomer = async (
         lastName,
         address,
         email,
-        // Prevent adding invoices from Customer
-        invoices: {},
       },
     });
 

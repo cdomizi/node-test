@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "@prisma/client";
 import PrismaErrorHandler from "../errors/PrismaErrorHandler";
 import CustomError from "../errors/CustomError";
+import getInvoiceIdNumber from "../utils/getInvoiceIdNumber";
 
 const invoiceClient = new PrismaClient().invoice;
 
@@ -13,8 +14,7 @@ const getAllInvoices = async (
   try {
     const allInvoices = await invoiceClient.findMany({
       include: {
-        customer: true,
-        products: true,
+        order: true,
       },
     });
     res.status(200).send(allInvoices);
@@ -29,8 +29,7 @@ const getInvoice = async (req: Request, res: Response, next: NextFunction) => {
     const invoice = await invoiceClient.findUnique({
       where: { id: parseInt(id) },
       include: {
-        customer: true,
-        products: true,
+        order: true,
       },
     });
 
@@ -52,22 +51,26 @@ const createInvoice = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { customerId, products } = req.body;
+  const { orderId } = req.body;
+  // Get the value for idNumber
+  const { idNumber, idNum, idDate } = getInvoiceIdNumber(
+    req.app.locals.idNum,
+    req.app.locals.idDate
+  );
+  // Update global variables
+  req.app.locals.idNum = idNum;
+  req.app.locals.idDate = idDate;
+
   try {
-    const IDs = products.map((product: number) => ({ id: product }));
-    console.log(IDs);
     const invoice = await invoiceClient.create({
       data: {
-        customer: {
-          connect: { id: customerId },
+        order: {
+          connect: { id: orderId },
         },
-        products: {
-          connect: [...IDs],
-        },
+        idNumber: idNumber,
       },
       include: {
-        customer: true,
-        products: true,
+        order: true,
       },
     });
 
@@ -85,23 +88,18 @@ const updateInvoice = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-  const { customerId, paid, products } = req.body;
+  const { orderId, paid } = req.body;
   try {
-    const IDs = products.map((product: number) => ({ id: product }));
     const invoice = await invoiceClient.update({
       where: { id: parseInt(id) },
       data: {
-        customer: {
-          connect: { id: customerId },
+        order: {
+          connect: { id: orderId },
         },
         paid,
-        products: {
-          connect: [...IDs],
-        },
       },
       include: {
-        customer: true,
-        products: true,
+        order: true,
       },
     });
 
@@ -123,8 +121,7 @@ const deleteInvoice = async (
     const invoice = await invoiceClient.delete({
       where: { id: parseInt(id) },
       include: {
-        customer: true,
-        products: true,
+        order: true,
       },
     });
 

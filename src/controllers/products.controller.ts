@@ -68,8 +68,8 @@ const createProduct = async (
         description,
         thumbnail,
         images,
-        // Prevent adding invoices from Customer
-        invoices: {},
+        // Prevent adding orders from Customer
+        orders: {},
       },
     });
 
@@ -113,8 +113,6 @@ const updateProduct = async (
         description,
         thumbnail,
         images,
-        // Prevent adding invoices from Customer
-        invoices: {},
       },
     });
 
