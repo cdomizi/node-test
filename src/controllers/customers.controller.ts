@@ -51,8 +51,6 @@ const createCustomer = async (
         lastName,
         address,
         email,
-        // Prevent adding orders from Customer
-        orders: {},
       },
     });
 

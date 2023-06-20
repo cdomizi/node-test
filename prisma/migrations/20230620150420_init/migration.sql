@@ -31,7 +31,7 @@ CREATE TABLE "orders" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "invoiceId" INTEGER NOT NULL,
+    "customerId" INTEGER NOT NULL,
 
     CONSTRAINT "orders_pkey" PRIMARY KEY ("id")
 );
@@ -44,26 +44,15 @@ CREATE TABLE "invoices" (
     "paymentDue" TIMESTAMP(3) NOT NULL DEFAULT NOW() + INTERVAL '30 days',
     "paid" BOOLEAN NOT NULL DEFAULT false,
     "idNumber" VARCHAR(255),
+    "orderId" INTEGER NOT NULL,
 
     CONSTRAINT "invoices_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "order_customer" (
-    "id" SERIAL NOT NULL,
-    "orderId" INTEGER,
-    "customerId" INTEGER,
-
-    CONSTRAINT "order_customer_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "order_products" (
-    "id" SERIAL NOT NULL,
-    "orderId" INTEGER,
-    "productId" INTEGER,
-
-    CONSTRAINT "order_products_pkey" PRIMARY KEY ("id")
+CREATE TABLE "_OrderToProduct" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
 );
 
 -- CreateIndex
@@ -73,22 +62,22 @@ CREATE UNIQUE INDEX "products_title_key" ON "products"("title");
 CREATE UNIQUE INDEX "customers_email_key" ON "customers"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "orders_invoiceId_key" ON "orders"("invoiceId");
+CREATE UNIQUE INDEX "invoices_orderId_key" ON "invoices"("orderId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "order_customer_orderId_key" ON "order_customer"("orderId");
+CREATE UNIQUE INDEX "_OrderToProduct_AB_unique" ON "_OrderToProduct"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_OrderToProduct_B_index" ON "_OrderToProduct"("B");
 
 -- AddForeignKey
-ALTER TABLE "orders" ADD CONSTRAINT "orders_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "invoices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "orders" ADD CONSTRAINT "orders_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order_customer" ADD CONSTRAINT "order_customer_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "invoices" ADD CONSTRAINT "invoices_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE SET DEFAULT;
 
 -- AddForeignKey
-ALTER TABLE "order_customer" ADD CONSTRAINT "order_customer_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "_OrderToProduct" ADD CONSTRAINT "_OrderToProduct_A_fkey" FOREIGN KEY ("A") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order_products" ADD CONSTRAINT "order_products_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "order_products" ADD CONSTRAINT "order_products_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "_OrderToProduct" ADD CONSTRAINT "_OrderToProduct_B_fkey" FOREIGN KEY ("B") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;

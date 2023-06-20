@@ -15,16 +15,10 @@ app.use(cors(corsOptions));
 app.use(json());
 app.use(cookieParser());
 
-// Set global variables for invoice ID number
-app.locals.idNum;
-app.locals.idDate;
-
 app.use("/api/v1", routes);
 
-const homeContent = `<h1>Node/Express REST API</h1><p>idNum: ${app.locals.idNum}</p><p>idDate: ${app.locals.idDate}</p>`;
-
 app.get("/", (req, res) => {
-  res.send(homeContent);
+  res.send("Node/Express REST API");
 });
 
 // Catch 404 and forward to error handler

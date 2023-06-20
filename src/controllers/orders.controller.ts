@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "@prisma/client";
 import PrismaErrorHandler from "../errors/PrismaErrorHandler";
 import CustomError from "../errors/CustomError";
-import getInvoiceIdNumber from "../utils/getInvoiceIdNumber";
+import getInvoiceIdNumber from "../utils/invoiceIdNumber";
 
 const orderClient = new PrismaClient().order;
 
@@ -49,20 +49,11 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   const { customerId, products, invoice } = req.body;
 
   try {
-    // Only create invoice number if `invoice` is true
-    let invoiceId;
-    if (invoice) {
-      const { idNumber, idNum, idDate } = getInvoiceIdNumber(
-        req.app.locals.idNum,
-        req.app.locals.idDate
-      );
-      invoiceId = idNumber;
-      // Update global variables
-      req.app.locals.idNum = idNum;
-      req.app.locals.idDate = idDate;
-    }
-
+    // Loop through the products to get the IDs
     const IDs = products.map((product: number) => ({ id: product }));
+    // Calculate invoice `idNumber` if `invoice` is true
+    const idNumber = invoice ? await getInvoiceIdNumber() : null;
+
     const order = await orderClient.create({
       data: {
         customer: {
@@ -74,7 +65,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
         // Only generate an invoice if `invoice` is true
         ...(invoice && {
           invoice: {
-            create: { idNumber: invoiceId },
+            create: { idNumber },
           },
         }),
       },
@@ -96,21 +87,10 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
 const updateOrder = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   const { customerId, products, invoice } = req.body;
+  // Calculate invoice `idNumber` if `invoice` is true
+  const idNumber = invoice ? await getInvoiceIdNumber() : null;
 
   try {
-    // Only create invoice number if `invoice` is true
-    let invoiceId;
-    if (invoice) {
-      const { idNumber, idNum, idDate } = getInvoiceIdNumber(
-        req.app.locals.idNum,
-        req.app.locals.idDate
-      );
-      invoiceId = idNumber;
-      // Update global variables
-      req.app.locals.idNum = idNum;
-      req.app.locals.idDate = idDate;
-    }
-
     const IDs = products.map((product: number) => ({ id: product }));
     const order = await orderClient.update({
       where: { id: parseInt(id) },
@@ -121,10 +101,16 @@ const updateOrder = async (req: Request, res: Response, next: NextFunction) => {
         products: {
           connect: [...IDs],
         },
-        // Only generate an invoice if `invoice` is true
+        // Only generate/connect an invoice if `invoice` is true
         ...(invoice && {
           invoice: {
-            create: { idNumber: invoiceId },
+            connectOrCreate: {
+              create: { idNumber },
+              where: {
+                orderId: parseInt(id),
+                idNumber,
+              },
+            },
           },
         }),
       },

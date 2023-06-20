@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "@prisma/client";
 import PrismaErrorHandler from "../errors/PrismaErrorHandler";
 import CustomError from "../errors/CustomError";
-import getInvoiceIdNumber from "../utils/getInvoiceIdNumber";
 
 const invoiceClient = new PrismaClient().invoice;
 
@@ -23,7 +22,11 @@ const getAllInvoices = async (
   }
 };
 
-const getInvoice = async (req: Request, res: Response, next: NextFunction) => {
+const getInvoiceById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const invoice = await invoiceClient.findUnique({
@@ -46,39 +49,19 @@ const getInvoice = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const createInvoice = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { orderId } = req.body;
-  // Get the value for idNumber
-  const { idNumber, idNum, idDate } = getInvoiceIdNumber(
-    req.app.locals.idNum,
-    req.app.locals.idDate
-  );
-  // Update global variables
-  req.app.locals.idNum = idNum;
-  req.app.locals.idDate = idDate;
-
+// Get invoices from a provided date
+const getInvoicesFromDate = async (date: Date) => {
   try {
-    const invoice = await invoiceClient.create({
-      data: {
-        order: {
-          connect: { id: orderId },
+    const invoices = await invoiceClient.findMany({
+      where: {
+        createdAt: {
+          gte: date,
         },
-        idNumber: idNumber,
-      },
-      include: {
-        order: true,
       },
     });
-
-    res.status(201).send(invoice);
+    return invoices;
   } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      PrismaErrorHandler(err, req, res, next);
-    } else next(err);
+    console.error(err);
   }
 };
 
@@ -88,14 +71,12 @@ const updateInvoice = async (
   next: NextFunction
 ) => {
   const { id } = req.params;
-  const { orderId, paid } = req.body;
+  const { paid } = req.body;
+
   try {
     const invoice = await invoiceClient.update({
       where: { id: parseInt(id) },
       data: {
-        order: {
-          connect: { id: orderId },
-        },
         paid,
       },
       include: {
@@ -135,8 +116,8 @@ const deleteInvoice = async (
 
 export {
   getAllInvoices,
-  getInvoice,
-  createInvoice,
+  getInvoicesFromDate,
+  getInvoiceById,
   updateInvoice,
   deleteInvoice,
 };

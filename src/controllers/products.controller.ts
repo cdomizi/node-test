@@ -68,8 +68,6 @@ const createProduct = async (
         description,
         thumbnail,
         images,
-        // Prevent adding orders from Customer
-        orders: {},
       },
     });
 

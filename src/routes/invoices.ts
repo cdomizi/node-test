@@ -1,8 +1,7 @@
 import { Router } from "express";
 import {
   getAllInvoices,
-  getInvoice,
-  createInvoice,
+  getInvoiceById,
   updateInvoice,
   deleteInvoice,
 } from "../controllers/invoices.controller";
@@ -13,10 +12,7 @@ const router = Router();
 router.route("/").get(getAllInvoices);
 
 // GET invoice by id
-router.route("/:id").get(getInvoice);
-
-// CREATE new invoice
-router.route("/").post(createInvoice);
+router.route("/:id").get(getInvoiceById);
 
 // UPDATE invoice
 router.route("/:id").put(updateInvoice);

@@ -8,47 +8,47 @@ generator client {
 }
 
 model Product {
-  id                 Int            @id @default(autoincrement())
-  title              String         @unique @db.VarChar(255)
-  brand              String?        @db.VarChar(255)
-  category           String?        @db.VarChar(255)
-  price              Decimal        @default(0.00) @db.Money
-  discountPercentage Decimal?       @default(0.00) @db.Decimal(5, 2)
-  rating             Decimal?       @db.Decimal(3, 2)
-  stock              Int            @default(0)
-  description        String?        @db.VarChar(255)
-  thumbnail          String?        @db.VarChar(255)
+  id                 Int      @id @default(autoincrement())
+  title              String   @unique @db.VarChar(255)
+  brand              String?  @db.VarChar(255)
+  category           String?  @db.VarChar(255)
+  price              Decimal  @default(0.00) @db.Money
+  discountPercentage Decimal? @default(0.00) @db.Decimal(5, 2)
+  rating             Decimal? @db.Decimal(3, 2)
+  stock              Int      @default(0)
+  description        String?  @db.VarChar(255)
+  thumbnail          String?  @db.VarChar(255)
   images             String[]
   // Order-Products = many-to-many
-  orders             OrderProduct[]
+  orders             Order[]
 
   @@map("products")
 }
 
 model Customer {
-  id        Int             @id @default(autoincrement())
-  firstName String          @db.VarChar(255)
-  lastName  String          @db.VarChar(255)
-  email     String          @unique
-  address   String          @db.VarChar(255)
+  id        Int     @id @default(autoincrement())
+  firstName String  @db.VarChar(255)
+  lastName  String  @db.VarChar(255)
+  email     String  @unique
+  address   String  @db.VarChar(255)
   // Order-Customer = one-to-many
-  orders    OrderCustomer[]
+  orders    Order[]
 
   @@map("customers")
 }
 
 model Order {
-  id        Int            @id @default(autoincrement())
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   // Order-Products = many-to-many
-  products  OrderProduct[]
+  products   Product[]
   // Order-Customer = one-to-many
-  customer  OrderCustomer?
+  // When a customer is deleted, all their orders are also deleted
+  customer   Customer  @relation(fields: [customerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  customerId Int
   // Order-Invoice = one-to-one
-  // On delete, the corresponding invoice is also deleted
-  invoice   Invoice?       @relation(fields: [invoiceId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  invoiceId Int            @unique
+  invoice    Invoice?
 
   @@map("orders")
 }
@@ -61,31 +61,9 @@ model Invoice {
   paid       Boolean  @default(false)
   idNumber   String?  @db.VarChar(255)
   // Order-Invoice = one-to-one
-  order      Order?
+  // When an order is deleted, the corresponding invoice is also deleted
+  order      Order    @relation(fields: [orderId], references: [id], onUpdate: SetDefault, onDelete: Cascade)
+  orderId    Int      @unique
 
   @@map("invoices")
-}
-
-model OrderCustomer {
-  id         Int       @id @default(autoincrement())
-  // If a customer is deleted, the corresponding orders are also deleted
-  order      Order?    @relation(fields: [orderId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  // If an order is deleted, `orderId` for the corresponding orders is set to null
-  customer   Customer? @relation(fields: [customerId], references: [id], onUpdate: Cascade, onDelete: SetNull)
-  orderId    Int?      @unique
-  customerId Int?
-
-  @@map("order_customer")
-}
-
-model OrderProduct {
-  id        Int      @id @default(autoincrement())
-  // If a product is deleted, `productId` for the corresponding orders is set to null
-  order     Order?   @relation(fields: [orderId], references: [id], onUpdate: Cascade, onDelete: SetNull)
-  // If an order is deleted, `orderId` for the corresponding products is set to null
-  product   Product? @relation(fields: [productId], references: [id], onUpdate: Cascade, onDelete: SetNull)
-  orderId   Int?
-  productId Int?
-
-  @@map("order_products")
 }
