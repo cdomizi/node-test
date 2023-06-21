@@ -16,6 +16,7 @@ const getAllOrders = async (
       include: {
         customer: true,
         products: true,
+        invoice: true,
       },
     });
     res.status(200).send(allOrders);
@@ -32,6 +33,7 @@ const getOrder = async (req: Request, res: Response, next: NextFunction) => {
       include: {
         customer: true,
         products: true,
+        invoice: true,
       },
     });
 

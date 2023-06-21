@@ -11,7 +11,9 @@ const getAllProducts = async (
   next: NextFunction
 ) => {
   try {
-    const allProducts = await productClient.findMany();
+    const allProducts = await productClient.findMany({
+      include: { orders: true },
+    });
     res.status(200).send(allProducts);
   } catch (err) {
     next(err);
@@ -23,6 +25,7 @@ const getProduct = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const product = await productClient.findUnique({
       where: { id: parseInt(id) },
+      include: { orders: true },
     });
 
     if (!product) {

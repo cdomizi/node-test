@@ -11,7 +11,9 @@ const getAllCustomers = async (
   next: NextFunction
 ) => {
   try {
-    const allCustomers = await customerClient.findMany();
+    const allCustomers = await customerClient.findMany({
+      include: { orders: true },
+    });
     res.status(200).send(allCustomers);
   } catch (err) {
     next(err);
@@ -23,6 +25,7 @@ const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
     const customer = await customerClient.findUnique({
       where: { id: parseInt(id) },
+      include: { orders: true },
     });
 
     if (!customer) {
@@ -97,6 +100,7 @@ const deleteCustomer = async (
   try {
     const customer = await customerClient.delete({
       where: { id: parseInt(id) },
+      include: { orders: true },
     });
 
     res.status(200).send(customer);

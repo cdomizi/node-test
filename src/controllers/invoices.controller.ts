@@ -49,26 +49,6 @@ const getInvoiceById = async (
   }
 };
 
-// Get invoice by orderId
-const getInvoiceByOrderId = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { orderId } = req.params;
-    const invoice = await invoiceClient.findMany({
-      where: {
-        orderId: parseInt(orderId),
-      },
-    });
-
-    res.status(200).send(invoice ?? false);
-  } catch (err) {
-    next(err);
-  }
-};
-
 // Get invoices from a provided date
 const getInvoicesFromDate = async (date: Date) => {
   try {
@@ -138,7 +118,6 @@ export {
   getAllInvoices,
   getInvoicesFromDate,
   getInvoiceById,
-  getInvoiceByOrderId,
   updateInvoice,
   deleteInvoice,
 };
