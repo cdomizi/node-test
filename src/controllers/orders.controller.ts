@@ -94,6 +94,25 @@ const updateOrder = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const IDs = products.map((product: number) => ({ id: product }));
+
+    // Get products on order
+    const orderData = await orderClient.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        products: true,
+      },
+    });
+    // Filter removed products
+    const oldProducts = await orderData?.products
+      // Get product IDs
+      ?.map((product) => product.id)
+      // Select IDs not present in request payload
+      ?.filter(
+        (id) => !IDs.some((product: { id: number }) => product.id === id)
+      )
+      // Format correctly
+      ?.map((id) => ({ id }));
+
     const order = await orderClient.update({
       where: { id: parseInt(id) },
       data: {
@@ -102,6 +121,8 @@ const updateOrder = async (req: Request, res: Response, next: NextFunction) => {
         },
         products: {
           connect: [...IDs],
+          // Only disconnect products if removed on update
+          ...(oldProducts?.length && { disconnect: oldProducts }),
         },
         // Only generate/connect an invoice if `invoice` is true
         ...(invoice && {
