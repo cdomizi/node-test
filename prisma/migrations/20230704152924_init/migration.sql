@@ -37,6 +37,15 @@ CREATE TABLE "orders" (
 );
 
 -- CreateTable
+CREATE TABLE "ProductOnOrder" (
+    "orderId" INTEGER NOT NULL,
+    "productId" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL DEFAULT 1,
+
+    CONSTRAINT "ProductOnOrder_pkey" PRIMARY KEY ("orderId","productId")
+);
+
+-- CreateTable
 CREATE TABLE "invoices" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -49,12 +58,6 @@ CREATE TABLE "invoices" (
     CONSTRAINT "invoices_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "_OrderToProduct" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL
-);
-
 -- CreateIndex
 CREATE UNIQUE INDEX "products_title_key" ON "products"("title");
 
@@ -64,20 +67,14 @@ CREATE UNIQUE INDEX "customers_email_key" ON "customers"("email");
 -- CreateIndex
 CREATE UNIQUE INDEX "invoices_orderId_key" ON "invoices"("orderId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "_OrderToProduct_AB_unique" ON "_OrderToProduct"("A", "B");
-
--- CreateIndex
-CREATE INDEX "_OrderToProduct_B_index" ON "_OrderToProduct"("B");
-
 -- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ProductOnOrder" ADD CONSTRAINT "ProductOnOrder_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProductOnOrder" ADD CONSTRAINT "ProductOnOrder_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "invoices" ADD CONSTRAINT "invoices_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE SET DEFAULT;
-
--- AddForeignKey
-ALTER TABLE "_OrderToProduct" ADD CONSTRAINT "_OrderToProduct_A_fkey" FOREIGN KEY ("A") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_OrderToProduct" ADD CONSTRAINT "_OrderToProduct_B_fkey" FOREIGN KEY ("B") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;

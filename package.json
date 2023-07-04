@@ -24,12 +24,12 @@
     "@typescript-eslint/parser": "^5.59.6",
     "eslint": "^8.40.0",
     "nodemon": "^2.0.22",
-    "prisma": "^4.15.0",
+    "prisma": "^4.16.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@prisma/client": "^4.15.0",
+    "@prisma/client": "^4.16.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",

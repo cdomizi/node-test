@@ -4,6 +4,12 @@ import PrismaErrorHandler from "../errors/PrismaErrorHandler";
 import CustomError from "../errors/CustomError";
 import getInvoiceIdNumber from "../utils/invoiceIdNumber";
 
+// Declare type for product parameter
+type product = {
+  id: number;
+  quantity: number | null;
+};
+
 const orderClient = new PrismaClient().order;
 
 const getAllOrders = async (
@@ -51,18 +57,21 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   const { customerId, products, invoice } = req.body;
 
   try {
-    // Loop through the products to get the IDs
-    const IDs = products.map((product: number) => ({ id: product }));
     // Calculate invoice `idNumber` if `invoice` is true
     const idNumber = invoice ? await getInvoiceIdNumber() : null;
 
     const order = await orderClient.create({
       data: {
+        // Connect the customer
         customer: {
           connect: { id: customerId },
         },
+        // Loop through products, connect each by id & add respective quantities
         products: {
-          connect: [...IDs],
+          create: products.map((product: product) => ({
+            product: { connect: { id: product.id } },
+            quantity: product?.quantity || 1,
+          })),
         },
         // Only generate an invoice if `invoice` is true
         ...(invoice && {
@@ -93,49 +102,38 @@ const updateOrder = async (req: Request, res: Response, next: NextFunction) => {
   const idNumber = invoice ? await getInvoiceIdNumber() : null;
 
   try {
-    const IDs = products.map((product: number) => ({ id: product }));
-
-    // Get products on order
-    const orderData = await orderClient.findUnique({
-      where: { id: parseInt(id) },
-      include: {
-        products: true,
-      },
-    });
-    // Filter removed products
-    const oldProducts = await orderData?.products
-      // Get product IDs
-      ?.map((product) => product.id)
-      // Select IDs not present in request payload
-      ?.filter(
-        (id) => !IDs.some((product: { id: number }) => product.id === id)
-      )
-      // Format correctly
-      ?.map((id) => ({ id }));
+    // Check if an invoice for the order
+    const checkInvoice = async () => {
+      const orderData = await orderClient.findFirst({
+        where: { id: parseInt(id) },
+        include: { invoice: true },
+      });
+      return !!orderData?.invoice;
+    };
 
     const order = await orderClient.update({
       where: { id: parseInt(id) },
       data: {
+        // Connect the customer
         customer: {
           connect: { id: customerId },
         },
+        // Loop through products, update each by id & add respective quantities
         products: {
-          connect: [...IDs],
-          // Only disconnect products if removed on update
-          ...(oldProducts?.length && { disconnect: oldProducts }),
+          deleteMany: { orderId: parseInt(id) },
+          create: products.map((product: product) => ({
+            product: { connect: { id: product.id } },
+            quantity: product?.quantity || 1,
+          })),
         },
-        // Only generate/connect an invoice if `invoice` is true
-        ...(invoice && {
-          invoice: {
-            connectOrCreate: {
-              create: { idNumber },
-              where: {
-                orderId: parseInt(id),
-                idNumber,
-              },
-            },
-          },
-        }),
+        invoice: {
+          // Delete invoice on update if exists
+          ...((await checkInvoice()) && { delete: true }),
+          // Only generate/connect an invoice if `invoice` is true
+          ...(invoice && {
+            create: { idNumber },
+          }),
+        },
       },
       include: {
         customer: true,

@@ -8,19 +8,18 @@ generator client {
 }
 
 model Product {
-  id                 Int      @id @default(autoincrement())
-  title              String   @unique @db.VarChar(255)
-  brand              String?  @db.VarChar(255)
-  category           String?  @db.VarChar(255)
-  price              Decimal  @default(0.00) @db.Money
-  discountPercentage Decimal? @default(0.00) @db.Decimal(5, 2)
-  rating             Decimal? @db.Decimal(3, 2)
-  stock              Int      @default(0)
-  description        String?  @db.VarChar(255)
-  thumbnail          String?  @db.VarChar(255)
+  id                 Int              @id @default(autoincrement())
+  title              String           @unique @db.VarChar(255)
+  brand              String?          @db.VarChar(255)
+  category           String?          @db.VarChar(255)
+  price              Decimal          @default(0.00) @db.Money
+  discountPercentage Decimal?         @default(0.00) @db.Decimal(5, 2)
+  rating             Decimal?         @db.Decimal(3, 2)
+  stock              Int              @default(0)
+  description        String?          @db.VarChar(255)
+  thumbnail          String?          @db.VarChar(255)
   images             String[]
-  // Order-Products = many-to-many
-  orders             Order[]
+  orders             ProductOnOrder[] // Order-Products = many-to-many
 
   @@map("products")
 }
@@ -31,26 +30,33 @@ model Customer {
   lastName  String  @db.VarChar(255)
   email     String  @unique
   address   String  @db.VarChar(255)
-  // Order-Customer = one-to-many
-  orders    Order[]
+  orders    Order[] // Order-Customer = one-to-many
 
   @@map("customers")
 }
 
 model Order {
-  id         Int       @id @default(autoincrement())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  // Order-Products = many-to-many
-  products   Product[]
+  id         Int              @id @default(autoincrement())
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  products   ProductOnOrder[] // Order-Products = many-to-many
   // Order-Customer = one-to-many
   // When a customer is deleted, all their orders are also deleted
-  customer   Customer  @relation(fields: [customerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  customer   Customer         @relation(fields: [customerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   customerId Int
-  // Order-Invoice = one-to-one
-  invoice    Invoice?
+  invoice    Invoice? // Order-Invoice = one-to-one
 
   @@map("orders")
+}
+
+model ProductOnOrder {
+  order     Order   @relation(fields: [orderId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  productId Int
+  quantity  Int     @default(1)
+
+  @@id([orderId, productId])
 }
 
 model Invoice {
