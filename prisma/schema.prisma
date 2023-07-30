@@ -63,7 +63,8 @@ model Invoice {
   id         Int      @id @default(autoincrement())
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  paymentDue DateTime @default(dbgenerated("NOW() + INTERVAL '30 days'"))
+  // Automatically set due date to 30 days (= 720 hours) from current date
+  paymentDue DateTime @default(dbgenerated("(now() + '720:00:00'::interval)"))
   paid       Boolean  @default(false)
   idNumber   String?  @db.VarChar(255)
   // Order-Invoice = one-to-one
