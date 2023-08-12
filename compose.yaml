@@ -3,7 +3,7 @@ services:
     container_name: node-server
     image: node-server:0.0.1
     env_file:
-      - .env
+      - .env.development
     build:
       context: .
       dockerfile: Dockerfile

@@ -5,7 +5,7 @@
 dist/**/*
 
 # misc
-.env.development.local
+.env.development
 
 .eslintrc.cjs
 .eslintignore
