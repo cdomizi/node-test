@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "../.prisma/client";
 import PrismaErrorHandler from "../errors/PrismaErrorHandler";
 import CustomError from "../errors/CustomError";
+import bcrypt from "bcrypt";
 
 const userClient = new PrismaClient().user;
 
@@ -31,37 +32,17 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getUserByUsername = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { username } = req.params;
-    const user = await userClient.findUnique({
-      where: { username: username },
-    });
-
-    if (!user) {
-      const error = new CustomError(
-        `User with username ${username} does not exist.`,
-        404
-      );
-      console.error(error);
-      res.status(error.statusCode).send({ message: error.message });
-    } else res.status(200).send(user);
-  } catch (err) {
-    next(err);
-  }
-};
-
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
   try {
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = await userClient.create({
       data: {
-        username,
-        password,
+        username: username,
+        password: hashedPassword,
       },
     });
 
@@ -77,11 +58,15 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   const { username, password } = req.body;
   try {
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = await userClient.update({
       where: { id: parseInt(id) },
       data: {
-        username,
-        password,
+        username: username,
+        password: hashedPassword,
       },
     });
 
@@ -108,11 +93,4 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export {
-  getAllUsers,
-  getUserById,
-  getUserByUsername,
-  createUser,
-  updateUser,
-  deleteUser,
-};
+export { getAllUsers, getUserById, createUser, updateUser, deleteUser };
