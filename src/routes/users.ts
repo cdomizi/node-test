@@ -2,7 +2,6 @@ import { Router } from "express";
 import {
   getAllUsers,
   getUserById,
-  getUserByUsername,
   createUser,
   updateUser,
   deleteUser,
@@ -15,9 +14,6 @@ router.route("/").get(getAllUsers);
 
 // GET user by id
 router.route("/:id").get(getUserById);
-
-// GET user by username
-router.route("/user/:username").get(getUserByUsername);
 
 // CREATE new user
 router.route("/").post(createUser);
