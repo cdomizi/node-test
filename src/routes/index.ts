@@ -1,4 +1,5 @@
 import { Router } from "express";
+import auth from "./auth";
 import users from "./users";
 import customers from "./customers";
 import products from "./products";
@@ -6,6 +7,9 @@ import orders from "./orders";
 import invoices from "./invoices";
 
 const router = Router();
+
+// Auth route
+router.use("/", auth);
 
 // Users route
 router.use("/users", users);

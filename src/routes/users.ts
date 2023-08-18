@@ -9,6 +9,9 @@ import {
 
 const router = Router();
 
+// Protect users routes
+// router.use(verifyJWT)
+
 // GET all users
 router.route("/").get(getAllUsers);
 

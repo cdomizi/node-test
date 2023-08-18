@@ -36,8 +36,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
   try {
     // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await userClient.create({
       data: {
@@ -59,8 +58,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
   try {
     // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await userClient.update({
       where: { id: parseInt(id) },
