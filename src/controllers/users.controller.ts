@@ -23,7 +23,7 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
     });
 
     if (!user) {
-      const error = new CustomError(`User with id ${id} does not exist.`, 404);
+      const error = new CustomError(`User with id ${id} does not exist`, 404);
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });
     } else res.status(200).send(user);
