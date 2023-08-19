@@ -1,16 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "../.prisma/client";
 import CustomError from "../errors/CustomError";
+import generateToken from "../utils/generateToken";
 import bcrypt from "bcrypt";
 
 const userClient = new PrismaClient().user;
 
-const login = async (req: Request, res: Response) => {
+const login = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
 
   // Check missing credentials
   if (!username || !password) {
-    const error = new CustomError("Please provide user name and password", 400);
+    const error = new CustomError("Please provide username and password", 400);
     console.error(error);
     res.status(error.statusCode).send({ message: error.message });
   }
@@ -34,8 +35,24 @@ const login = async (req: Request, res: Response) => {
     res.status(error.statusCode).send({ message: error.message });
   }
 
-  res.json(`User ${username} logged in`);
-  // res.json({ accessToken })
+  try {
+    // On valid credentials, generate access token
+    const accessToken =
+      process.env.ACCESS_TOKEN_SECRET &&
+      user?.username &&
+      user?.isAdmin &&
+      generateToken(
+        user.username,
+        user.isAdmin,
+        process.env.ACCESS_TOKEN_SECRET,
+        "15s"
+      );
+    // generateToken(user.username, process.env.ACCESS_TOKEN_SECRET, "10m");
+
+    res.json({ accessToken });
+  } catch (err) {
+    next(err);
+  }
 };
 
 const logout = (req: Request, res: Response, next: NextFunction) => {

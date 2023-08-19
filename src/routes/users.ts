@@ -6,11 +6,12 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/users.controller";
+import verifyToken from "../middleware/verifyToken";
 
 const router = Router();
 
 // Protect users routes
-// router.use(verifyJWT)
+router.use(verifyToken);
 
 // GET all users
 router.route("/").get(getAllUsers);

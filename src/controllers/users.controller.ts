@@ -33,7 +33,7 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { username, password } = req.body;
+  const { username, password, isAdmin = false } = req.body;
   try {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -42,6 +42,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       data: {
         username: username,
         password: hashedPassword,
+        isAdmin: isAdmin,
       },
     });
 
@@ -55,7 +56,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { username, password } = req.body;
+  const { username, password, isAdmin = false } = req.body;
   try {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -65,6 +66,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
       data: {
         username: username,
         password: hashedPassword,
+        isAdmin: isAdmin,
       },
     });
 
