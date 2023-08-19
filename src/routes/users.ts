@@ -10,6 +10,9 @@ import verifyToken from "../middleware/verifyToken";
 
 const router = Router();
 
+// CREATE new user
+router.route("/").post(createUser);
+
 // Protect users routes
 router.use(verifyToken);
 
@@ -18,9 +21,6 @@ router.route("/").get(getAllUsers);
 
 // GET user by id
 router.route("/:id").get(getUserById);
-
-// CREATE new user
-router.route("/").post(createUser);
 
 // UPDATE user
 router.route("/:id").put(updateUser);

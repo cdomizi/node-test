@@ -1,23 +1,42 @@
 import { Request, Response, NextFunction } from "express";
+import bcrypt from "bcrypt";
 import { PrismaClient, Prisma } from "../.prisma/client";
 import PrismaErrorHandler from "../errors/PrismaErrorHandler";
 import CustomError from "../errors/CustomError";
-import bcrypt from "bcrypt";
+import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;
 
 const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+  // Get user admin status
+  const adminUser = req.user?.isAdmin;
+
   try {
-    const allUsers = await userClient.findMany();
-    res.status(200).send(allUsers);
+    // Restrict method to admin users only
+    if (adminUser) {
+      const allUsers = await userClient.findMany();
+      res.status(200).send(allUsers);
+    } else {
+      // Set error message and statusCode based on request `user` property
+      const error = req.user
+        ? new CustomError("Forbidden: User is not an admin", 403)
+        : new CustomError("Unauthorized: Authentication required", 401);
+      console.error(error);
+      res.status(error.statusCode).send({ message: error.message });
+    }
   } catch (err) {
     next(err);
   }
 };
 
 const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+
+  // Get user admin status
+  const adminUser = req.user?.isAdmin;
+  const username = req.user?.username;
+
   try {
-    const { id } = req.params;
     const user = await userClient.findUnique({
       where: { id: parseInt(id) },
     });
@@ -26,7 +45,16 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
       const error = new CustomError(`User with id ${id} does not exist`, 404);
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });
-    } else res.status(200).send(user);
+    } else {
+      // Restrict method to admin users and the user itself
+      if (adminUser || username === user.username) {
+        res.status(200).send(user);
+      } else {
+        const error = new CustomError("Forbidden: User is not an admin", 403);
+        console.error(error);
+        res.status(error.statusCode).send({ message: error.message });
+      }
+    }
   } catch (err) {
     next(err);
   }
@@ -34,6 +62,7 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password, isAdmin = false } = req.body;
+
   try {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -46,7 +75,18 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       },
     });
 
-    res.status(201).send(user);
+    const accessToken =
+      process.env.ACCESS_TOKEN_SECRET &&
+      user?.username &&
+      generateToken(
+        user.username,
+        user.isAdmin,
+        process.env.ACCESS_TOKEN_SECRET,
+        "15s"
+      );
+    // generateToken(user.username, process.env.ACCESS_TOKEN_SECRET, "10m");
+
+    res.status(201).send({ user, accessToken });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       PrismaErrorHandler(err, req, res, next);
@@ -57,20 +97,35 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   const { username, password, isAdmin = false } = req.body;
+
+  // Get request user username & admin status
+  const adminUser = req.user?.isAdmin;
+  const reqUsername = req.user?.username;
+
+  // Get user username
+  const userData = await userClient.findUnique({ where: { id: parseInt(id) } });
+  const oldUsername = userData?.username;
+
   try {
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Restrict method to admin users and the user itself
+    if (adminUser || oldUsername === reqUsername) {
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await userClient.update({
-      where: { id: parseInt(id) },
-      data: {
-        username: username,
-        password: hashedPassword,
-        isAdmin: isAdmin,
-      },
-    });
-
-    res.status(200).send(user);
+      const user = await userClient.update({
+        where: { id: parseInt(id) },
+        data: {
+          username: oldUsername || username,
+          password: hashedPassword,
+          isAdmin: isAdmin,
+        },
+      });
+      res.status(200).send(user);
+    } else {
+      const error = new CustomError("Forbidden: User is not an admin", 403);
+      console.error(error);
+      res.status(error.statusCode).send({ message: error.message });
+    }
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       PrismaErrorHandler(err, req, res, next);
@@ -80,12 +135,28 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  try {
-    const user = await userClient.delete({
-      where: { id: parseInt(id) },
-    });
 
-    res.status(200).send(user);
+  // Get request user username & admin status
+  const adminUser = req.user?.isAdmin;
+  const reqUsername = req.user?.username;
+
+  // Get user username
+  const userData = await userClient.findUnique({ where: { id: parseInt(id) } });
+  const username = userData?.username;
+
+  try {
+    // Restrict method to admin users and the user itself
+    if (adminUser || username === reqUsername) {
+      const user = await userClient.delete({
+        where: { id: parseInt(id) },
+      });
+
+      res.status(200).send(user);
+    } else {
+      const error = new CustomError("Forbidden: User is not an admin", 403);
+      console.error(error);
+      res.status(error.statusCode).send({ message: error.message });
+    }
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       PrismaErrorHandler(err, req, res, next);

@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
+import bcrypt from "bcrypt";
 import { PrismaClient } from "../.prisma/client";
 import CustomError from "../errors/CustomError";
 import generateToken from "../utils/generateToken";
-import bcrypt from "bcrypt";
 
 const userClient = new PrismaClient().user;
 
@@ -40,12 +40,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     const accessToken =
       process.env.ACCESS_TOKEN_SECRET &&
       user?.username &&
-      user?.isAdmin &&
       generateToken(
         user.username,
         user.isAdmin,
         process.env.ACCESS_TOKEN_SECRET,
-        "15s"
+        "20s"
       );
     // generateToken(user.username, process.env.ACCESS_TOKEN_SECRET, "10m");
 
