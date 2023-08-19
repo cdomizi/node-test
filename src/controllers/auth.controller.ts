@@ -44,22 +44,32 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.ACCESS_TOKEN_SECRET,
-        "20s"
+        "15s"
       );
-    // generateToken(user.username, process.env.ACCESS_TOKEN_SECRET, "10m");
+    // generateToken(user.username, user.isAdmin, process.env.ACCESS_TOKEN_SECRET, "10m");
+
+    // On valid credentials, generate refresh token
+    const refreshToken =
+      process.env.REFRESH_TOKEN_SECRET &&
+      user?.username &&
+      generateToken(
+        user.username,
+        user.isAdmin,
+        process.env.REFRESH_TOKEN_SECRET,
+        "30s"
+      );
+    // generateToken(user.username, user.isAdmin, process.env.REFRESH_TOKEN_SECRET, "1d");
+
+    // On valid credentials, save refresh token in a cookie
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
+    });
 
     res.json({ accessToken });
   } catch (err) {
-    next(err);
-  }
-};
-
-const logout = (req: Request, res: Response, next: NextFunction) => {
-  try {
-    console.log("log out user");
-    res.send();
-  } catch (err) {
-    console.error("logout error");
     next(err);
   }
 };
@@ -72,6 +82,27 @@ const refresh = (req: Request, res: Response, next: NextFunction) => {
     console.error("token refresh error");
     next(err);
   }
+};
+
+const logout = (req: Request, res: Response) => {
+  const cookies = req.cookies;
+
+  // Send empty response if cookie is not available
+  if (!cookies?.jwt) {
+    res.sendStatus(200);
+    return;
+  }
+
+  // Clear the cookie if available
+  res.clearCookie("jwt", {
+    // Pass the same options provided on create, else clear will fail
+    httpOnly: true,
+    sameSite: "strict",
+    secure: true,
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+  res.sendStatus(200).send("JWT cookie cleared");
+  return;
 };
 
 export { login, logout, refresh };

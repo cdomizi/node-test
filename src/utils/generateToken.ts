@@ -4,7 +4,7 @@ const generateToken = (
   username: string,
   isAdmin: boolean,
   secret: string,
-  duration: string
+  duration: string | number = "1d"
 ) => {
   return jwt.sign({ username, isAdmin }, secret, {
     expiresIn: duration,

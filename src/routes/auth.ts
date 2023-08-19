@@ -6,10 +6,10 @@ const router = Router();
 // Log in user
 router.route("/login").post(login);
 
-// Log out user
-router.route("/logout").post(logout);
-
 // Refresh auth token
 router.route("/refresh").post(refresh);
+
+// Log out user
+router.route("/logout").get(logout);
 
 export default router;

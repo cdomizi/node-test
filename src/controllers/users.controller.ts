@@ -86,6 +86,25 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       );
     // generateToken(user.username, process.env.ACCESS_TOKEN_SECRET, "10m");
 
+    const refreshToken =
+      process.env.REFRESH_TOKEN_SECRET &&
+      user?.username &&
+      generateToken(
+        user.username,
+        user.isAdmin,
+        process.env.REFRESH_TOKEN_SECRET,
+        "30s"
+      );
+    // generateToken(user.username, user.isAdmin, process.env.REFRESH_TOKEN_SECRET, "1d");
+
+    // Save refresh token in a cookie
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
+    });
+
     res.status(201).send({ user, accessToken });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
