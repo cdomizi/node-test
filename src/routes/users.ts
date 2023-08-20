@@ -1,4 +1,5 @@
 import { Router } from "express";
+import verifyToken from "../middleware/verifyToken";
 import {
   getAllUsers,
   getUserById,
@@ -6,7 +7,6 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/users.controller";
-import verifyToken from "../middleware/verifyToken";
 
 const router = Router();
 

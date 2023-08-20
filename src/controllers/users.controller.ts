@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
+
 import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../errors/PrismaErrorHandler";
-import CustomError from "../errors/CustomError";
+import PrismaErrorHandler from "../middleware/errors/PrismaErrorHandler";
+
+import CustomError from "../middleware/errors/CustomError";
 import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;

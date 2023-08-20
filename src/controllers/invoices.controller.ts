@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../errors/PrismaErrorHandler";
-import CustomError from "../errors/CustomError";
+import PrismaErrorHandler from "../middleware/errors/PrismaErrorHandler";
+import CustomError from "../middleware/errors/CustomError";
 
 const invoiceClient = new PrismaClient().invoice;
 

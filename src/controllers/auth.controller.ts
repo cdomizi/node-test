@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
 import { PrismaClient } from "../.prisma/client";
-import CustomError from "../errors/CustomError";
+
+import CustomError from "../middleware/errors/CustomError";
 import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;
@@ -76,10 +79,70 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
 const refresh = (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log("refresh auth token");
-    res.send();
+    const cookies = req.cookies;
+
+    // If JWT cookie is not available, send a `401` response
+    if (!cookies?.jwt) {
+      const error = new CustomError("Unauthorized: Token required", 401);
+      console.error(error);
+      return res.status(error.statusCode).send({ message: error.message });
+    }
+
+    const refreshToken = cookies.jwt;
+
+    process.env.REFRESH_TOKEN_SECRET &&
+      jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET,
+        {},
+        async (err, decoded) => {
+          // If the provided token is not valid, send error as a response
+          if (err) {
+            const error = new CustomError(
+              "Forbidden: Authorization token not valid or expired",
+              403
+            );
+            console.error(error);
+            return res
+              .status(error.statusCode)
+              .send({ message: error.message });
+          }
+
+          // Check existing user
+          const user = await userClient.findUnique({
+            where: { username: (decoded as UserInterface).username },
+          });
+
+          // Send 404 response on user not found
+          if (!user) {
+            const error = new CustomError(
+              `Unauthorized: User ${
+                (decoded as UserInterface).username || ""
+              } not found`,
+              404
+            );
+            console.error(error);
+            return res
+              .status(error.statusCode)
+              .send({ message: error.message });
+          }
+
+          // If the user exists, generate a new access token
+          const accessToken =
+            process.env.ACCESS_TOKEN_SECRET &&
+            user?.username &&
+            generateToken(
+              user.username,
+              user.isAdmin,
+              process.env.ACCESS_TOKEN_SECRET,
+              "15s"
+            );
+          // generateToken(user.username, user.isAdmin, process.env.ACCESS_TOKEN_SECRET, "10m");
+
+          res.json({ accessToken });
+        }
+      );
   } catch (err) {
-    console.error("token refresh error");
     next(err);
   }
 };
@@ -97,7 +160,7 @@ const logout = (req: Request, res: Response) => {
     sameSite: "strict",
     secure: true,
   });
-  return res.status(200).send("JWT cookie cleared");
+  res.status(200).send("JWT cookie cleared");
 };
 
 export { login, logout, refresh };

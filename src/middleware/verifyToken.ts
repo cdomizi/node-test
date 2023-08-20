@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import CustomError from "../errors/CustomError";
+import CustomError from "../middleware/errors/CustomError";
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   // Get request header
@@ -30,7 +30,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
           403
         );
         console.error(error);
-        res.status(error.statusCode).send({ message: error.message });
+        return res.status(error.statusCode).send({ message: error.message });
       }
 
       // If the provided token is valid, add user info to the request payload
