@@ -88,21 +88,16 @@ const logout = (req: Request, res: Response) => {
   const cookies = req.cookies;
 
   // Send empty response if cookie is not available
-  if (!cookies?.jwt) {
-    res.sendStatus(200);
-    return;
-  }
+  if (!cookies?.jwt) return res.sendStatus(200);
 
   // Clear the cookie if available
   res.clearCookie("jwt", {
-    // Pass the same options provided on create, else clear will fail
+    // Pass same options provided on create except maxAge, else clear will fail
     httpOnly: true,
     sameSite: "strict",
     secure: true,
-    maxAge: 24 * 60 * 60 * 1000,
   });
-  res.sendStatus(200).send("JWT cookie cleared");
-  return;
+  return res.status(200).send("JWT cookie cleared");
 };
 
 export { login, logout, refresh };
