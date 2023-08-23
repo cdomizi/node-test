@@ -4,7 +4,8 @@ import jwt from "jsonwebtoken";
 
 import { PrismaClient } from "../.prisma/client";
 
-import CustomError from "../middleware/errors/CustomError";
+import CustomError from "../utils/CustomError";
+import checkMissingFields from "../utils/checkMissingFields";
 import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;
@@ -13,10 +14,12 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
 
   // Check missing credentials
-  if (!username || !password) {
-    const error = new CustomError("Please provide username and password", 400);
-    console.error(error);
-    res.status(error.statusCode).send({ message: error.message });
+  const missingFieldsError = checkMissingFields({ username, password });
+  if (missingFieldsError) {
+    console.error(missingFieldsError);
+    return res
+      .status(missingFieldsError.statusCode)
+      .send({ message: missingFieldsError.message });
   }
 
   // Check existing user

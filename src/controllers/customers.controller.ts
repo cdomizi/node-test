@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/errors/PrismaErrorHandler";
-import CustomError from "../middleware/errors/CustomError";
+import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
+import CustomError from "../utils/CustomError";
+import checkMissingFields from "../utils/checkMissingFields";
 
 const customerClient = new PrismaClient().customer;
 
@@ -48,6 +49,19 @@ const createCustomer = async (
 ) => {
   const { firstName, lastName, address, email } = req.body;
   try {
+    // If any required field is missing, return an error
+    const missingFieldsError = checkMissingFields({
+      firstName,
+      lastName,
+      address,
+      email,
+    });
+    if (missingFieldsError) {
+      console.error(missingFieldsError);
+      return res
+        .status(missingFieldsError.statusCode)
+        .send({ message: missingFieldsError.message });
+    }
     const customer = await customerClient.create({
       data: {
         firstName,

@@ -2,9 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 
 import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/errors/PrismaErrorHandler";
+import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
 
-import CustomError from "../middleware/errors/CustomError";
+import CustomError from "../utils/CustomError";
+import checkMissingFields from "../utils/checkMissingFields";
 import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;
@@ -66,6 +67,35 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password, isAdmin = false } = req.body;
 
   try {
+    // If any required field is missing, return an error
+    const missingFieldsError = checkMissingFields({ username, password });
+    if (missingFieldsError) {
+      console.error(missingFieldsError);
+      return res
+        .status(missingFieldsError.statusCode)
+        .send({ message: missingFieldsError.message });
+    }
+
+    // Validate username to be 3+ characters long
+    if (username?.length < 3) {
+      const error = new CustomError(
+        "Username must be at least 3 characters long",
+        400
+      );
+      console.error(error);
+      return res.status(error.statusCode).send({ message: error.message });
+    }
+
+    // Validate password to be 6+ characters long
+    if (password?.length < 6) {
+      const error = new CustomError(
+        "Password must be at least 6 characters long",
+        400
+      );
+      console.error(error);
+      return res.status(error.statusCode).send({ message: error.message });
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 

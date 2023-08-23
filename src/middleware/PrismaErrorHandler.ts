@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { Prisma } from "../../.prisma/client";
-import CustomError from "./CustomError";
+import { Prisma } from "../.prisma/client";
+import CustomError from "../utils/CustomError";
 
 const handlePrismaError = (err: Prisma.PrismaClientKnownRequestError) => {
   switch (err.code) {

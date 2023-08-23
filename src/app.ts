@@ -6,7 +6,7 @@ import cors from "cors";
 import corsOptions from "./config/corsOptions";
 
 import routes from "./routes";
-import PrismaErrorHandler from "./middleware/errors/PrismaErrorHandler";
+import PrismaErrorHandler from "./middleware/PrismaErrorHandler";
 
 const app = express();
 

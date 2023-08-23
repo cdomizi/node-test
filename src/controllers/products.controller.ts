@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/errors/PrismaErrorHandler";
-import CustomError from "../middleware/errors/CustomError";
+import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
+import CustomError from "../utils/CustomError";
+import checkMissingFields from "../utils/checkMissingFields";
 
 const productClient = new PrismaClient().product;
 
@@ -53,12 +54,20 @@ const createProduct = async (
     price,
     discountPercentage,
     rating,
-    stock,
+    stock = 0,
     description,
     thumbnail,
-    images,
+    images = [],
   } = req.body;
   try {
+    // If any required field is missing, return an error
+    const missingFieldsError = checkMissingFields({ title, price });
+    if (missingFieldsError) {
+      console.error(missingFieldsError);
+      return res
+        .status(missingFieldsError.statusCode)
+        .send({ message: missingFieldsError.message });
+    }
     const product = await productClient.create({
       data: {
         title,

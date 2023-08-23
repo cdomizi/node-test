@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/errors/PrismaErrorHandler";
-import CustomError from "../middleware/errors/CustomError";
+import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
+import CustomError from "../utils/CustomError";
+import checkMissingFields from "../utils/checkMissingFields";
 import getInvoiceIdNumber from "../utils/invoiceIdNumber";
 
 // Declare type for product parameter
@@ -55,6 +56,15 @@ const getOrder = async (req: Request, res: Response, next: NextFunction) => {
 
 const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   const { customerId, products, invoice } = req.body;
+
+  // If any required field is missing, return an error
+  const missingFieldsError = checkMissingFields({ customerId, products });
+  if (missingFieldsError) {
+    console.error(missingFieldsError);
+    return res
+      .status(missingFieldsError.statusCode)
+      .send({ message: missingFieldsError.message });
+  }
 
   try {
     // Calculate invoice `idNumber` if `invoice` is true

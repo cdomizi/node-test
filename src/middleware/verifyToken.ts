@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import CustomError from "../middleware/errors/CustomError";
+import CustomError from "../utils/CustomError";
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   // Get request header
