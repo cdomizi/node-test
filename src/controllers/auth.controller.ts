@@ -71,10 +71,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       httpOnly: true,
       sameSite: "none",
       secure: true,
-      maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
+      maxAge: 30 * 1000,
+      // maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
     });
 
-    res.json({ accessToken, isAdmin: user?.isAdmin });
+    res.json({ accessToken, isAdmin: user?.isAdmin || false });
   } catch (err) {
     next(err);
   }
@@ -154,7 +155,7 @@ const logout = (req: Request, res: Response) => {
   const cookies = req.cookies;
 
   // Send empty response if cookie is not available
-  if (!cookies?.jwt) return res.sendStatus(200);
+  if (!cookies?.jwt) return res.sendStatus(204);
 
   // Clear the cookie if available
   res.clearCookie("jwt", {

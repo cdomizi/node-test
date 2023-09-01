@@ -32,25 +32,30 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getUserById = async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
-
-  // Get user admin status
-  const adminUser = req.user?.isAdmin;
-  const username = req.user?.username;
+const getUserByUsername = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { username } = req.params;
 
   try {
     const user = await userClient.findUnique({
-      where: { id: parseInt(id) },
+      where: { username: username },
     });
 
     if (!user) {
-      const error = new CustomError(`User with id ${id} does not exist`, 404);
+      const error = new CustomError(
+        `User with username ${username} does not exist`,
+        404
+      );
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });
     } else {
+      const { isAdmin } = user;
+
       // Restrict method to admin users and the user itself
-      if (adminUser || username === user.username) {
+      if (isAdmin || username === user.username) {
         res.status(200).send(user);
       } else {
         const error = new CustomError("Forbidden: User is not an admin", 403);
@@ -215,4 +220,4 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { getAllUsers, getUserById, createUser, updateUser, deleteUser };
+export { getAllUsers, getUserByUsername, createUser, updateUser, deleteUser };

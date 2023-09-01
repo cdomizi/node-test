@@ -2,7 +2,7 @@ import { Router } from "express";
 import verifyToken from "../middleware/verifyToken";
 import {
   getAllUsers,
-  getUserById,
+  getUserByUsername,
   createUser,
   updateUser,
   deleteUser,
@@ -19,8 +19,8 @@ router.use(verifyToken);
 // GET all users
 router.route("/").get(getAllUsers);
 
-// GET user by id
-router.route("/:id").get(getUserById);
+// GET user by username
+router.route("/:username").get(getUserByUsername);
 
 // UPDATE user
 router.route("/:id").put(updateUser);

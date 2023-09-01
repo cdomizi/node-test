@@ -7,7 +7,7 @@ const router = Router();
 router.route("/login").post(login);
 
 // Refresh auth token
-router.route("/refresh").post(refresh);
+router.route("/refresh").get(refresh);
 
 // Log out user
 router.route("/logout").get(logout);
