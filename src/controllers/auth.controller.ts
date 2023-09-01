@@ -69,12 +69,12 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     // On valid credentials, save refresh token in a cookie
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "none",
       secure: true,
       maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
     });
 
-    res.json({ accessToken });
+    res.json({ accessToken, isAdmin: user?.isAdmin });
   } catch (err) {
     next(err);
   }
@@ -160,7 +160,7 @@ const logout = (req: Request, res: Response) => {
   res.clearCookie("jwt", {
     // Pass same options provided on create except maxAge, else clear will fail
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "none",
     secure: true,
   });
   res.status(200).send("JWT cookie cleared");

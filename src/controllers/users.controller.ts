@@ -132,7 +132,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // Save refresh token in a cookie
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "none",
       secure: true,
       maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
     });

@@ -3,7 +3,7 @@ import CustomError from "./CustomError";
 const checkMissingFields = ({ ...fields }) => {
   // Filter missing fields
   const missingFields = Object.entries(fields)
-    .filter((field) => field[1] == null || undefined)
+    ?.filter((field) => field[1] == (null || undefined || ""))
     ?.map((missingField) => missingField[0]);
 
   // Return 400 error if any field is missing, else return false
