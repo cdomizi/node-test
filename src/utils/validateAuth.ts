@@ -1,4 +1,5 @@
 import CustomError from "./CustomError";
+import bcrypt from "bcrypt";
 
 const checkMissingFields = ({ ...fields }) => {
   // Filter missing fields
@@ -19,4 +20,23 @@ const checkMissingFields = ({ ...fields }) => {
   } else return false;
 };
 
-export default checkMissingFields;
+// Check matching password
+const checkPassword = async (submittedPassword: string, password: string) => {
+  const match = await bcrypt.compare(submittedPassword, password);
+  return match;
+};
+
+// Decode JWT
+const decodeJWT = (token: string) => {
+  try {
+    const base64URL = token.split(".")[1];
+    const decodedData = atob(base64URL);
+    const payload = JSON.parse(decodedData);
+    return payload;
+  } catch (err) {
+    console.error("Error while decoding the token:", err);
+    return null;
+  }
+};
+
+export { checkMissingFields, checkPassword, decodeJWT };

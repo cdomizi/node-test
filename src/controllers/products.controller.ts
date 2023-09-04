@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { PrismaClient, Prisma } from "../.prisma/client";
 import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
 import CustomError from "../utils/CustomError";
-import checkMissingFields from "../utils/checkMissingFields";
+import { checkMissingFields } from "../utils/validateAuth";
 
 const productClient = new PrismaClient().product;
 

@@ -5,7 +5,11 @@ import { PrismaClient, Prisma } from "../.prisma/client";
 import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
 
 import CustomError from "../utils/CustomError";
-import checkMissingFields from "../utils/checkMissingFields";
+import {
+  checkMissingFields,
+  checkPassword,
+  decodeJWT,
+} from "../utils/validateAuth";
 import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;
@@ -15,7 +19,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   const adminUser = req.user?.isAdmin;
 
   try {
-    // Restrict method to admin users only
+    // Restrict method to admins only
     if (adminUser) {
       const allUsers = await userClient.findMany();
       res.status(200).send(allUsers);
@@ -54,7 +58,7 @@ const getUserByUsername = async (
     } else {
       const { isAdmin } = user;
 
-      // Restrict method to admin users and the user itself
+      // Restrict method to admins and the user itself
       if (isAdmin || username === user.username) {
         res.status(200).send(user);
       } else {
@@ -152,7 +156,11 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { username, password, isAdmin = false } = req.body;
+  const {
+    username: newUsername = null,
+    password = null,
+    isAdmin = null,
+  } = req.body;
 
   // Get request user username & admin status
   const adminUser = req.user?.isAdmin;
@@ -160,20 +168,25 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 
   // Get user username
   const userData = await userClient.findUnique({ where: { id: parseInt(id) } });
-  const oldUsername = userData?.username;
+  const username = userData?.username;
 
   try {
-    // Restrict method to admin users and the user itself
-    if (adminUser || oldUsername === reqUsername) {
+    // Restrict method to admins and the user itself
+    if (
+      (adminUser || username === reqUsername) &&
+      // Further restrict changing roles to admins only
+      !(!adminUser && isAdmin)
+    ) {
       // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = password && (await bcrypt.hash(password, 10));
 
       const user = await userClient.update({
         where: { id: parseInt(id) },
         data: {
-          username: oldUsername || username,
-          password: hashedPassword,
-          isAdmin: isAdmin,
+          // Only update data provided in the request body
+          username: newUsername || username,
+          password: hashedPassword || userData?.password,
+          isAdmin: isAdmin ?? userData?.isAdmin ?? false,
         },
       });
       res.status(200).send(user);
@@ -192,7 +205,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
 
-  // Get request user username & admin status
+  // Get request user username & role
   const adminUser = req.user?.isAdmin;
   const reqUsername = req.user?.username;
 
@@ -201,7 +214,7 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   const username = userData?.username;
 
   try {
-    // Restrict method to admin users and the user itself
+    // Restrict method to admins and the user itself
     if (adminUser || username === reqUsername) {
       const user = await userClient.delete({
         where: { id: parseInt(id) },
@@ -220,4 +233,57 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { getAllUsers, getUserByUsername, createUser, updateUser, deleteUser };
+const confirmPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id, password } = req.body;
+  const cookies = req?.cookies;
+  const authToken = cookies?.jwt;
+
+  // Get user data
+  const userData = await userClient.findUnique({ where: { id: parseInt(id) } });
+
+  try {
+    // Identify the user via data encoded in JWT cookie
+    const { username } = decodeJWT(authToken);
+
+    // Restrict method to the user itself
+    if (username === userData?.username) {
+      // Check matching password
+      const match =
+        userData?.password &&
+        (await checkPassword(password, userData?.password));
+      // Send error if password is wrong
+      if (!match) {
+        const error = new CustomError(
+          `Wrong password for user ${userData?.username}`,
+          401
+        );
+        console.error(error);
+        res.status(error.statusCode).send({ message: error.message });
+      }
+      // If the password matches, send 200 response
+      res.status(200).send("Password OK");
+    } else {
+      // If it is not the user themselves performing the action, throw 403 error
+      const error = new CustomError("Forbidden", 403);
+      console.error(error);
+      res.status(error.statusCode).send({ message: error.message });
+    }
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      PrismaErrorHandler(err, req, res, next);
+    } else next(err);
+  }
+};
+
+export {
+  getAllUsers,
+  getUserByUsername,
+  createUser,
+  updateUser,
+  deleteUser,
+  confirmPassword,
+};

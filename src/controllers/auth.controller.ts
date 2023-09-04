@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 import { PrismaClient } from "../.prisma/client";
 
 import CustomError from "../utils/CustomError";
-import checkMissingFields from "../utils/checkMissingFields";
+import { checkMissingFields, checkPassword } from "../utils/validateAuth";
 import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;
@@ -33,9 +32,9 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   // Check matching password
-  const checkPassword =
-    user?.password && (await bcrypt.compare(password, user.password));
-  if (checkPassword == false) {
+  const match =
+    user?.password && (await checkPassword(password, user?.password));
+  if (!match) {
     const error = new CustomError(`Wrong password for user ${username}`, 401);
     console.error(error);
     res.status(error.statusCode).send({ message: error.message });
@@ -62,7 +61,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.REFRESH_TOKEN_SECRET,
-        "30s"
+        "15m"
       );
     // generateToken(user.username, user.isAdmin, process.env.REFRESH_TOKEN_SECRET, "1d");
 
@@ -71,11 +70,16 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       httpOnly: true,
       sameSite: "none",
       secure: true,
-      maxAge: 30 * 1000,
+      maxAge: 15 * 60 * 1000,
       // maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
     });
 
-    res.json({ accessToken, isAdmin: user?.isAdmin || false });
+    res.json({
+      accessToken,
+      id: user?.id,
+      username: user?.username,
+      isAdmin: user?.isAdmin || false,
+    });
   } catch (err) {
     next(err);
   }
@@ -143,7 +147,12 @@ const refresh = (req: Request, res: Response, next: NextFunction) => {
             );
           // generateToken(user.username, user.isAdmin, process.env.ACCESS_TOKEN_SECRET, "10m");
 
-          res.json({ accessToken });
+          res.json({
+            accessToken,
+            id: user?.id,
+            username: user?.username,
+            isAdmin: user?.isAdmin || false,
+          });
         }
       );
   } catch (err) {

@@ -6,6 +6,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  confirmPassword,
 } from "../controllers/users.controller";
 
 const router = Router();
@@ -27,5 +28,8 @@ router.route("/:id").put(updateUser);
 
 // DELETE user by id
 router.route("/:id").delete(deleteUser);
+
+// Password confirmation
+router.route("/:id/password").post(confirmPassword);
 
 export default router;
