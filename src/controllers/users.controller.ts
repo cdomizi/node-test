@@ -146,7 +146,12 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
     });
 
-    res.status(201).send({ user, accessToken });
+    res.status(201).send({
+      accessToken,
+      id: user?.id,
+      username: user?.username,
+      isAdmin: user?.isAdmin,
+    });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       PrismaErrorHandler(err, req, res, next);
@@ -220,11 +225,11 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
         where: { id: parseInt(id) },
       });
 
-      res.status(200).send(user);
+      return res.status(200).send(user);
     } else {
       const error = new CustomError("Forbidden: User is not an admin", 403);
       console.error(error);
-      res.status(error.statusCode).send({ message: error.message });
+      return res.status(error.statusCode).send({ message: error.message });
     }
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {

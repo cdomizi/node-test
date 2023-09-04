@@ -28,7 +28,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   if (!user) {
     const error = new CustomError(`User ${username} does not exist`, 404);
     console.error(error);
-    res.status(error.statusCode).send({ message: error.message });
+    return res.status(error.statusCode).send({ message: error.message });
   }
 
   // Check matching password
@@ -37,7 +37,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   if (!match) {
     const error = new CustomError(`Wrong password for user ${username}`, 401);
     console.error(error);
-    res.status(error.statusCode).send({ message: error.message });
+    return res.status(error.statusCode).send({ message: error.message });
   }
 
   try {
