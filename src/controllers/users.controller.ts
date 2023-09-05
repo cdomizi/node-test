@@ -11,6 +11,7 @@ import {
   decodeJWT,
 } from "../utils/validateAuth";
 import generateToken from "../utils/generateToken";
+import { accessTokenMaxAge, refreshTokenMaxAge } from "./auth.controller";
 
 const userClient = new PrismaClient().user;
 
@@ -123,9 +124,8 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.ACCESS_TOKEN_SECRET,
-        "15s"
+        accessTokenMaxAge
       );
-    // generateToken(user.username, process.env.ACCESS_TOKEN_SECRET, "10m");
 
     const refreshToken =
       process.env.REFRESH_TOKEN_SECRET &&
@@ -134,9 +134,8 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.REFRESH_TOKEN_SECRET,
-        "30s"
+        refreshTokenMaxAge
       );
-    // generateToken(user.username, user.isAdmin, process.env.REFRESH_TOKEN_SECRET, "1d");
 
     // Save refresh token in a cookie
     res.cookie("jwt", refreshToken, {

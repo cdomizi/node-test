@@ -9,6 +9,14 @@ import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;
 
+// Set access token expiry time to 10 minutes
+const accessTokenMaxAge = 15; // set to 15s for testing purposes
+// const accessTokenMaxAge = 10 * 60;
+
+// Set refresh token expiry time to 1 day
+const refreshTokenMaxAge = 15 * 60; // set to 15m for testing purposes
+// const accessTokenMaxAge = 24 * 60 * 60;
+
 const login = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
 
@@ -49,9 +57,8 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.ACCESS_TOKEN_SECRET,
-        "15s"
+        accessTokenMaxAge
       );
-    // generateToken(user.username, user.isAdmin, process.env.ACCESS_TOKEN_SECRET, "10m");
 
     // On valid credentials, generate refresh token
     const refreshToken =
@@ -61,17 +68,15 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.REFRESH_TOKEN_SECRET,
-        "15m"
+        refreshTokenMaxAge
       );
-    // generateToken(user.username, user.isAdmin, process.env.REFRESH_TOKEN_SECRET, "1d");
 
     // On valid credentials, save refresh token in a cookie
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       sameSite: "none",
       secure: true,
-      maxAge: 15 * 60 * 1000,
-      // maxAge: 24 * 60 * 60 * 1000, // expires in 1 day, matches refreshToken
+      maxAge: accessTokenMaxAge * 1000, // Requires time in ms, matches refreshToken
     });
 
     res.json({
@@ -143,9 +148,8 @@ const refresh = (req: Request, res: Response, next: NextFunction) => {
               user.username,
               user.isAdmin,
               process.env.ACCESS_TOKEN_SECRET,
-              "15s"
+              accessTokenMaxAge
             );
-          // generateToken(user.username, user.isAdmin, process.env.ACCESS_TOKEN_SECRET, "10m");
 
           res.json({
             accessToken,
@@ -176,4 +180,4 @@ const logout = (req: Request, res: Response) => {
   res.status(200).send("JWT cookie cleared");
 };
 
-export { login, logout, refresh };
+export { login, logout, refresh, accessTokenMaxAge, refreshTokenMaxAge };
