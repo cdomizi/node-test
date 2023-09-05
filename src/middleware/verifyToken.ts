@@ -6,7 +6,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   // Get request header
   const authHeader = req.headers["authorization"];
 
-  // Check if the
+  // Check if authorization header exists & is well formatted
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     const error = new CustomError(
       "Unauthorized: Authorization token required",

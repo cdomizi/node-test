@@ -76,7 +76,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       httpOnly: true,
       sameSite: "none",
       secure: true,
-      maxAge: accessTokenMaxAge * 1000, // Requires time in ms, matches refreshToken
+      maxAge: refreshTokenMaxAge * 1000, // Requires time in ms, matches refreshToken
     });
 
     res.json({
