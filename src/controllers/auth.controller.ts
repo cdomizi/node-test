@@ -10,12 +10,10 @@ import generateToken from "../utils/generateToken";
 const userClient = new PrismaClient().user;
 
 // Set access token expiry time to 10 minutes
-const accessTokenMaxAge = 15; // set to 15s for testing purposes
-// const accessTokenMaxAge = 10 * 60;
+const accessTokenMaxAge = 10 * 60;
 
 // Set refresh token expiry time to 1 day
-const refreshTokenMaxAge = 15 * 60; // set to 15m for testing purposes
-// const accessTokenMaxAge = 24 * 60 * 60;
+const refreshTokenMaxAge = 24 * 60 * 60;
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
