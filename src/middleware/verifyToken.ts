@@ -35,8 +35,8 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
 
       // If the provided token is valid, add user info to the request payload
       req.user = {
-        username: (decoded as UserInterface).username,
-        isAdmin: (decoded as UserInterface).isAdmin,
+        username: (decoded as UserType).username,
+        isAdmin: (decoded as UserType).isAdmin,
       };
       next();
     });

@@ -1,13 +1,13 @@
 export {};
 
 declare global {
-  interface UserInterface {
+  type UserType = {
     username: string;
     isAdmin: boolean;
-  }
+  };
   namespace Express {
-    interface Request {
-      user: UserInterface | null;
-    }
+    type Request = {
+      user: UserType | null;
+    };
   }
 }

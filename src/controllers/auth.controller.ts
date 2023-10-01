@@ -121,14 +121,14 @@ const refresh = (req: Request, res: Response, next: NextFunction) => {
 
           // Check existing user
           const user = await userClient.findUnique({
-            where: { username: (decoded as UserInterface).username },
+            where: { username: (decoded as UserType).username },
           });
 
           // Send 404 response on user not found
           if (!user) {
             const error = new CustomError(
               `Unauthorized: User ${
-                (decoded as UserInterface).username || ""
+                (decoded as UserType).username || ""
               } not found`,
               404
             );
