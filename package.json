@@ -1,12 +1,14 @@
 {
   "name": "node-test",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Dockerized TS Node/Express REST API with PostgreSQL database.",
   "repository": "git@bitbucket.org:cdomizi/node-test.git",
   "author": "Cesare Domizi <domizicesare@gmail.com>",
   "license": "UNLICENSED",
   "main": "dist/index.js",
   "scripts": {
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "ts-lint": "tsc",
     "build": "rimraf dist && npx tsc",
     "prestart": "yarn build",
     "start": "NODE_ENV=production node dist/index.js",
@@ -28,7 +30,10 @@
     "@typescript-eslint/parser": "^6.16.0",
     "bcrypt": "^5.1.1",
     "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.2",
     "nodemon": "^3.0.2",
+    "prettier": "3.1.1",
     "prisma": "5.7.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
