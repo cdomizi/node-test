@@ -6,8 +6,8 @@ declare global {
     isAdmin: boolean;
   };
   namespace Express {
-    type Request = {
+    interface Request {
       user: UserType | null;
-    };
+    }
   }
 }
