@@ -1,11 +1,11 @@
+import { PrismaClient } from "@prisma/client";
 import { RequestHandler } from "express";
 import { ParamsDictionary } from "express-serve-static-core";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "../.prisma/client";
 
-import { CustomError } from "../utils/CustomError";
-import { generateToken } from "../utils/generateToken";
-import { checkMissingFields, checkPassword } from "../utils/validateAuth";
+import { CustomError } from "@utils/CustomError";
+import { generateToken } from "@utils/generateToken";
+import { checkMissingFields, checkPassword } from "@utils/validateAuth";
 
 const userClient = new PrismaClient().user;
 

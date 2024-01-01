@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response } from "express";
-import { Prisma } from "../.prisma/client";
-import { CustomError } from "../utils/CustomError";
+import { Prisma } from "@prisma/client";
+import { CustomError } from "@utils/CustomError";
+import { ErrorRequestHandler } from "express";
 
 const handlePrismaError = (err: Prisma.PrismaClientKnownRequestError) => {
   switch (err.code) {
@@ -25,12 +25,7 @@ const handlePrismaError = (err: Prisma.PrismaClientKnownRequestError) => {
   }
 };
 
-export const PrismaErrorHandler = (
-  err: Prisma.PrismaClientKnownRequestError | Error,
-  req?: Request,
-  res?: Response,
-  next?: NextFunction, // eslint-disable-line @typescript-eslint/no-unused-vars
-) => {
+export const PrismaErrorHandler: ErrorRequestHandler = (err, req, res) => {
   const error =
     err instanceof Prisma.PrismaClientKnownRequestError
       ? handlePrismaError(err)

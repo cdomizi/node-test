@@ -1,12 +1,8 @@
-import { NextFunction, Request, Response } from "express";
+import { CustomError } from "@utils/CustomError";
+import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
-import { CustomError } from "../utils/CustomError";
 
-export const verifyToken = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const verifyToken: RequestHandler = (req, res, next) => {
   // Get request header
   const authHeader = req.headers.authorization;
 

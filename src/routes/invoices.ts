@@ -1,11 +1,11 @@
-import { Router } from "express";
 import {
   deleteInvoice,
   getAllInvoices,
   getInvoiceById,
   updateInvoice,
-} from "../controllers/invoices.controller";
-import { verifyToken } from "../middleware/verifyToken";
+} from "@controllers/invoices.controller";
+import { verifyToken } from "@middleware/verifyToken";
+import { Router } from "express";
 
 export const invoicesRouter = Router();
 

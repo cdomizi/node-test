@@ -1,11 +1,11 @@
-import { Router } from "express";
 import {
   createCustomer,
   deleteCustomer,
   getAllCustomers,
   getCustomer,
   updateCustomer,
-} from "../controllers/customers.controller";
+} from "@controllers/customers.controller";
+import { Router } from "express";
 
 export const customersRouter = Router();
 

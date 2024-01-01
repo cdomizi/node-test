@@ -1,12 +1,12 @@
+import { corsOptions } from "@config/corsOptions";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { NextFunction, Request, Response, json } from "express";
 import createHttpError from "http-errors";
 import logger from "morgan";
-import { corsOptions } from "./config/corsOptions";
 
-import { PrismaErrorHandler } from "./middleware/PrismaErrorHandler";
-import { routes } from "./routes";
+import { PrismaErrorHandler } from "@middleware/PrismaErrorHandler";
+import { routes } from "@routes/index";
 
 export const app = express();
 

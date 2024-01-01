@@ -1,4 +1,3 @@
-import { Router } from "express";
 import {
   confirmPassword,
   createUser,
@@ -6,8 +5,9 @@ import {
   getAllUsers,
   getUserByUsername,
   updateUser,
-} from "../controllers/users.controller";
-import { verifyToken } from "../middleware/verifyToken";
+} from "@controllers/users.controller";
+import { verifyToken } from "@middleware/verifyToken";
+import { Router } from "express";
 
 export const usersRouter = Router();
 

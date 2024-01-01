@@ -1,21 +1,21 @@
+import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { RequestHandler } from "express";
 import { ParamsDictionary } from "express-serve-static-core";
-import { Prisma, PrismaClient } from "../.prisma/client";
 
-import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
-import { CustomError } from "../utils/CustomError";
-import { generateToken } from "../utils/generateToken";
-import {
-  checkMissingFields,
-  checkPassword,
-  decodeJWT,
-} from "../utils/validateAuth";
 import {
   JWTCookie,
   accessTokenMaxAge,
   refreshTokenMaxAge,
-} from "./auth.controller";
+} from "@controllers/auth.controller";
+import { PrismaErrorHandler } from "@middleware/PrismaErrorHandler";
+import { CustomError } from "@utils/CustomError";
+import { generateToken } from "@utils/generateToken";
+import {
+  checkMissingFields,
+  checkPassword,
+  decodeJWT,
+} from "@utils/validateAuth";
 
 const userClient = new PrismaClient().user;
 
