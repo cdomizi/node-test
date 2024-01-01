@@ -1,21 +1,35 @@
-import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
+import { RequestHandler } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
+import { Prisma, PrismaClient } from "../.prisma/client";
 
-import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
-
-import CustomError from "../utils/CustomError";
+import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
+import { CustomError } from "../utils/CustomError";
+import { generateToken } from "../utils/generateToken";
 import {
   checkMissingFields,
   checkPassword,
   decodeJWT,
 } from "../utils/validateAuth";
-import generateToken from "../utils/generateToken";
-import { accessTokenMaxAge, refreshTokenMaxAge } from "./auth.controller";
+import {
+  JWTCookie,
+  accessTokenMaxAge,
+  refreshTokenMaxAge,
+} from "./auth.controller";
 
 const userClient = new PrismaClient().user;
 
-const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+type UserData = { id: number; password: string };
+
+type UserRequestBody = { username: string; password: string; isAdmin: boolean };
+
+type UserRequestHandler<TBody = UserRequestBody> = RequestHandler<
+  ParamsDictionary,
+  unknown,
+  TBody
+>;
+
+const getAllUsers: RequestHandler = async (req, res, next) => {
   // Get user admin status
   const adminUser = req.user?.isAdmin;
 
@@ -37,11 +51,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getUserByUsername = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const getUserByUsername: RequestHandler = async (req, res, next) => {
   const { username } = req.params;
 
   try {
@@ -52,7 +62,7 @@ const getUserByUsername = async (
     if (!user) {
       const error = new CustomError(
         `User with username ${username} does not exist`,
-        404
+        404,
       );
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });
@@ -73,7 +83,7 @@ const getUserByUsername = async (
   }
 };
 
-const createUser = async (req: Request, res: Response, next: NextFunction) => {
+const createUser: UserRequestHandler = async (req, res, next) => {
   const { username, password, isAdmin = false } = req.body;
 
   try {
@@ -90,7 +100,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     if (username?.length < 3) {
       const error = new CustomError(
         "Username must be at least 3 characters long",
-        400
+        400,
       );
       console.error(error);
       return res.status(error.statusCode).send({ message: error.message });
@@ -100,7 +110,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     if (password?.length < 6) {
       const error = new CustomError(
         "Password must be at least 6 characters long",
-        400
+        400,
       );
       console.error(error);
       return res.status(error.statusCode).send({ message: error.message });
@@ -124,7 +134,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.ACCESS_TOKEN_SECRET,
-        accessTokenMaxAge
+        accessTokenMaxAge,
       );
 
     const refreshToken =
@@ -134,7 +144,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.REFRESH_TOKEN_SECRET,
-        refreshTokenMaxAge
+        refreshTokenMaxAge,
       );
 
     // Save refresh token in a cookie
@@ -158,7 +168,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+const updateUser: UserRequestHandler = async (req, res, next) => {
   const { id } = req.params;
   const {
     username: newUsername = null,
@@ -206,7 +216,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+const deleteUser: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
   // Get request user username & role
@@ -237,13 +247,13 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const confirmPassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+const confirmPassword: UserRequestHandler<UserData> = async (
+  req,
+  res,
+  next,
 ) => {
   const { id, password } = req.body;
-  const cookies = req?.cookies;
+  const cookies = req?.cookies as JWTCookie;
   const authToken = cookies?.jwt;
 
   // Get user data
@@ -263,7 +273,7 @@ const confirmPassword = async (
       if (!match) {
         const error = new CustomError(
           `Wrong password for user ${userData?.username}`,
-          401
+          401,
         );
         console.error(error);
         res.status(error.statusCode).send({ message: error.message });
@@ -284,10 +294,10 @@ const confirmPassword = async (
 };
 
 export {
+  confirmPassword,
+  createUser,
+  deleteUser,
   getAllUsers,
   getUserByUsername,
-  createUser,
   updateUser,
-  deleteUser,
-  confirmPassword,
 };

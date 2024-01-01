@@ -1,16 +1,34 @@
-import { Request, Response, NextFunction } from "express";
-import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
-import CustomError from "../utils/CustomError";
+import { RequestHandler } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
+import { Prisma, PrismaClient } from "../.prisma/client";
+
+import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
+import { CustomError } from "../utils/CustomError";
 import { checkMissingFields } from "../utils/validateAuth";
 
 const productClient = new PrismaClient().product;
 
-const getAllProducts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+type ProductRequestBody = {
+  id?: number;
+  title: string;
+  brand: string;
+  category: string;
+  price: number;
+  discountPercentage: number;
+  rating: number;
+  stock: number;
+  description: string;
+  thumbnail: string;
+  images: string[];
+};
+
+type ProductRequestHandler = RequestHandler<
+  ParamsDictionary,
+  unknown,
+  ProductRequestBody
+>;
+
+const getAllProducts: RequestHandler = async (req, res, next) => {
   try {
     const allProducts = await productClient.findMany({
       include: { orders: true },
@@ -21,7 +39,7 @@ const getAllProducts = async (
   }
 };
 
-const getProduct = async (req: Request, res: Response, next: NextFunction) => {
+const getProduct: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const product = await productClient.findUnique({
@@ -32,7 +50,7 @@ const getProduct = async (req: Request, res: Response, next: NextFunction) => {
     if (!product) {
       const error = new CustomError(
         `Product with id ${id} does not exist.`,
-        400
+        400,
       );
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });
@@ -42,11 +60,7 @@ const getProduct = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const createProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const createProduct: ProductRequestHandler = async (req, res, next) => {
   const {
     title,
     brand,
@@ -76,7 +90,7 @@ const createProduct = async (
         price,
         discountPercentage,
         rating,
-        stock: parseInt(stock),
+        stock: typeof stock === "number" ? stock : parseInt(stock),
         description,
         thumbnail,
         images,
@@ -91,11 +105,7 @@ const createProduct = async (
   }
 };
 
-const updateProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const updateProduct: ProductRequestHandler = async (req, res, next) => {
   const { id } = req.params;
   const {
     title,
@@ -119,7 +129,7 @@ const updateProduct = async (
         price,
         discountPercentage,
         rating,
-        stock: parseInt(stock),
+        stock: typeof stock === "number" ? stock : parseInt(stock),
         description,
         thumbnail,
         images,
@@ -134,11 +144,7 @@ const updateProduct = async (
   }
 };
 
-const deleteProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const deleteProduct: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
     const product = await productClient.delete({
@@ -154,9 +160,9 @@ const deleteProduct = async (
 };
 
 export {
+  createProduct,
+  deleteProduct,
   getAllProducts,
   getProduct,
-  createProduct,
   updateProduct,
-  deleteProduct,
 };

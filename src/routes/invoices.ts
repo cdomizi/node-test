@@ -1,27 +1,25 @@
 import { Router } from "express";
 import {
+  deleteInvoice,
   getAllInvoices,
   getInvoiceById,
   updateInvoice,
-  deleteInvoice,
 } from "../controllers/invoices.controller";
-import verifyToken from "../middleware/verifyToken";
+import { verifyToken } from "../middleware/verifyToken";
 
-const router = Router();
+export const invoicesRouter = Router();
 
 // GET all invoices
-router.route("/").get(getAllInvoices);
+invoicesRouter.route("/").get(getAllInvoices);
 
 // GET invoice by id
-router.route("/:id").get(getInvoiceById);
+invoicesRouter.route("/:id").get(getInvoiceById);
 
 // Protect invoices UPDATE and DELETE routes
-router.use(verifyToken);
+invoicesRouter.use(verifyToken);
 
 // UPDATE invoice
-router.route("/:id").put(updateInvoice);
+invoicesRouter.route("/:id").put(updateInvoice);
 
 // DELETE invoice by id
-router.route("/:id").delete(deleteInvoice);
-
-export default router;
+invoicesRouter.route("/:id").delete(deleteInvoice);

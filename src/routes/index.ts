@@ -1,29 +1,27 @@
 import { Router } from "express";
-import auth from "./auth";
-import users from "./users";
-import customers from "./customers";
-import products from "./products";
-import orders from "./orders";
-import invoices from "./invoices";
+import { authRouter } from "./auth";
+import { customersRouter } from "./customers";
+import { invoicesRouter } from "./invoices";
+import { ordersRouter } from "./orders";
+import { productsRouter } from "./products";
+import { usersRouter } from "./users";
 
-const router = Router();
+export const routes = Router();
 
 // Auth route
-router.use("/", auth);
+routes.use("/", authRouter);
 
 // Users route
-router.use("/users", users);
+routes.use("/users", usersRouter);
 
 // Customers route
-router.use("/customers", customers);
+routes.use("/customers", customersRouter);
 
 // Products route
-router.use("/products", products);
+routes.use("/products", productsRouter);
 
 // Orders route
-router.use("/orders", orders);
+routes.use("/orders", ordersRouter);
 
 // Invoices route
-router.use("/invoices", invoices);
-
-export default router;
+routes.use("/invoices", invoicesRouter);

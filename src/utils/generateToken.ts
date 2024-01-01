@@ -1,14 +1,12 @@
 import jwt from "jsonwebtoken";
 
-const generateToken = (
+export const generateToken = (
   username: string,
   isAdmin: boolean,
   secret: string,
-  duration: number
+  duration: number,
 ) => {
   return jwt.sign({ username, isAdmin }, secret, {
     expiresIn: duration,
   });
 };
-
-export default generateToken;

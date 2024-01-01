@@ -1,16 +1,26 @@
-import { Request, Response, NextFunction } from "express";
-import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
-import CustomError from "../utils/CustomError";
+import { RequestHandler } from "express";
+import { Prisma, PrismaClient } from "../.prisma/client";
+
+import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
+import { CustomError } from "../utils/CustomError";
 import { checkMissingFields } from "../utils/validateAuth";
 
 const customerClient = new PrismaClient().customer;
 
-const getAllCustomers = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+type Customer = {
+  firstName: string;
+  lastName: string;
+  address: string;
+  email: string;
+};
+
+type CustomerParams = {
+  id: string;
+};
+
+type CustomerRequestHandler = RequestHandler<CustomerParams, unknown, Customer>;
+
+const getAllCustomers: RequestHandler = async (req, res, next) => {
   try {
     const allCustomers = await customerClient.findMany({
       include: { orders: true },
@@ -21,7 +31,7 @@ const getAllCustomers = async (
   }
 };
 
-const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
+const getCustomer: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const customer = await customerClient.findUnique({
@@ -32,7 +42,7 @@ const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
     if (!customer) {
       const error = new CustomError(
         `Customer with id ${id} does not exist.`,
-        404
+        404,
       );
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });
@@ -42,11 +52,7 @@ const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const createCustomer = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const createCustomer: CustomerRequestHandler = async (req, res, next) => {
   const { firstName, lastName, address, email } = req.body;
   try {
     // If any required field is missing, return an error
@@ -56,7 +62,7 @@ const createCustomer = async (
       address,
       email,
     });
-    if (missingFieldsError) {
+    if (missingFieldsError instanceof CustomError) {
       console.error(missingFieldsError);
       return res
         .status(missingFieldsError.statusCode)
@@ -79,11 +85,7 @@ const createCustomer = async (
   }
 };
 
-const updateCustomer = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const updateCustomer: CustomerRequestHandler = async (req, res, next) => {
   const { id } = req.params;
   const { firstName, lastName, address, email } = req.body;
   try {
@@ -105,11 +107,7 @@ const updateCustomer = async (
   }
 };
 
-const deleteCustomer = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const deleteCustomer: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
     const customer = await customerClient.delete({
@@ -126,9 +124,9 @@ const deleteCustomer = async (
 };
 
 export {
+  createCustomer,
+  deleteCustomer,
   getAllCustomers,
   getCustomer,
-  createCustomer,
   updateCustomer,
-  deleteCustomer,
 };

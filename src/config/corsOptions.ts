@@ -1,9 +1,10 @@
-import whitelist from "./whitelist";
+import { whitelist } from "./whitelist";
 
-type StaticOrigin = boolean | string | RegExp | (boolean | string | RegExp)[];
+type Origin = boolean | string | RegExp;
+type StaticOrigin = Origin | Origin[];
 type CustomOrigin = (err: Error | null, origin?: StaticOrigin) => void;
 
-const corsOptions = {
+export const corsOptions = {
   origin: (requestOrigin: string | undefined, callback: CustomOrigin) => {
     if (!requestOrigin || whitelist.indexOf(requestOrigin) !== -1) {
       callback(null, true);
@@ -13,5 +14,3 @@ const corsOptions = {
   },
   credentials: true,
 };
-
-export default corsOptions;

@@ -1,35 +1,33 @@
 import { Router } from "express";
-import verifyToken from "../middleware/verifyToken";
 import {
+  confirmPassword,
+  createUser,
+  deleteUser,
   getAllUsers,
   getUserByUsername,
-  createUser,
   updateUser,
-  deleteUser,
-  confirmPassword,
 } from "../controllers/users.controller";
+import { verifyToken } from "../middleware/verifyToken";
 
-const router = Router();
+export const usersRouter = Router();
 
 // CREATE new user
-router.route("/").post(createUser);
+usersRouter.route("/").post(createUser);
 
 // Protect users routes
-router.use(verifyToken);
+usersRouter.use(verifyToken);
 
 // GET all users
-router.route("/").get(getAllUsers);
+usersRouter.route("/").get(getAllUsers);
 
 // GET user by username
-router.route("/:username").get(getUserByUsername);
+usersRouter.route("/:username").get(getUserByUsername);
 
 // UPDATE user
-router.route("/:id").put(updateUser);
+usersRouter.route("/:id").put(updateUser);
 
 // DELETE user by id
-router.route("/:id").delete(deleteUser);
+usersRouter.route("/:id").delete(deleteUser);
 
 // Password confirmation
-router.route("/:id/password").post(confirmPassword);
-
-export default router;
+usersRouter.route("/:id/password").post(confirmPassword);

@@ -1,4 +1,4 @@
-class CustomError extends Error {
+export class CustomError extends Error {
   error: string | undefined;
   stack: string | undefined;
   statusCode: number;
@@ -10,5 +10,3 @@ class CustomError extends Error {
     this.statusCode = statusCode;
   }
 }
-
-export default CustomError;

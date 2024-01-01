@@ -1,13 +1,22 @@
-import { Request, Response, NextFunction } from "express";
+import { RequestHandler } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
 import jwt from "jsonwebtoken";
-
 import { PrismaClient } from "../.prisma/client";
 
-import CustomError from "../utils/CustomError";
+import { CustomError } from "../utils/CustomError";
+import { generateToken } from "../utils/generateToken";
 import { checkMissingFields, checkPassword } from "../utils/validateAuth";
-import generateToken from "../utils/generateToken";
 
 const userClient = new PrismaClient().user;
+
+type LoginReqBody = {
+  username: string;
+  password: string;
+};
+
+export type JWTCookie = {
+  jwt?: string;
+};
 
 // Set access token expiry time to 10 minutes
 const accessTokenMaxAge = 10 * 60;
@@ -15,8 +24,13 @@ const accessTokenMaxAge = 10 * 60;
 // Set refresh token expiry time to 1 day
 const refreshTokenMaxAge = 24 * 60 * 60;
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
-  const { username, password } = req.body;
+const login: RequestHandler<ParamsDictionary, unknown, LoginReqBody> = async (
+  req,
+  res,
+  next,
+) => {
+  const loginCredentials = req.body;
+  const { username, password } = loginCredentials;
 
   // Check missing credentials
   const missingFieldsError = checkMissingFields({ username, password });
@@ -55,7 +69,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.ACCESS_TOKEN_SECRET,
-        accessTokenMaxAge
+        accessTokenMaxAge,
       );
 
     // On valid credentials, generate refresh token
@@ -66,7 +80,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         user.username,
         user.isAdmin,
         process.env.REFRESH_TOKEN_SECRET,
-        refreshTokenMaxAge
+        refreshTokenMaxAge,
       );
 
     // On valid credentials, save refresh token in a cookie
@@ -88,9 +102,9 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const refresh = (req: Request, res: Response, next: NextFunction) => {
+const refresh: RequestHandler = (req, res, next) => {
   try {
-    const cookies = req.cookies;
+    const cookies = req.cookies as JWTCookie;
 
     // If JWT cookie is not available, send a `401` response
     if (!cookies?.jwt) {
@@ -111,7 +125,7 @@ const refresh = (req: Request, res: Response, next: NextFunction) => {
           if (err) {
             const error = new CustomError(
               "Forbidden: Authorization token not valid or expired",
-              403
+              403,
             );
             console.error(error);
             return res
@@ -130,7 +144,7 @@ const refresh = (req: Request, res: Response, next: NextFunction) => {
               `Unauthorized: User ${
                 (decoded as UserType).username || ""
               } not found`,
-              404
+              404,
             );
             console.error(error);
             return res
@@ -146,7 +160,7 @@ const refresh = (req: Request, res: Response, next: NextFunction) => {
               user.username,
               user.isAdmin,
               process.env.ACCESS_TOKEN_SECRET,
-              accessTokenMaxAge
+              accessTokenMaxAge,
             );
 
           res.json({
@@ -155,15 +169,15 @@ const refresh = (req: Request, res: Response, next: NextFunction) => {
             username: user?.username,
             isAdmin: user?.isAdmin || false,
           });
-        }
+        },
       );
   } catch (err) {
     next(err);
   }
 };
 
-const logout = (req: Request, res: Response) => {
-  const cookies = req.cookies;
+const logout: RequestHandler = (req, res) => {
+  const cookies = req.cookies as JWTCookie;
 
   // Send empty response if cookie is not available
   if (!cookies?.jwt) return res.sendStatus(204);
@@ -178,4 +192,4 @@ const logout = (req: Request, res: Response) => {
   res.status(200).send("JWT cookie cleared");
 };
 
-export { login, logout, refresh, accessTokenMaxAge, refreshTokenMaxAge };
+export { accessTokenMaxAge, login, logout, refresh, refreshTokenMaxAge };

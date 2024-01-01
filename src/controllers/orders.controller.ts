@@ -1,23 +1,29 @@
-import { Request, Response, NextFunction } from "express";
-import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
-import CustomError from "../utils/CustomError";
-import { checkMissingFields } from "../utils/validateAuth";
-import getInvoiceIdNumber from "../utils/invoiceIdNumber";
+import { RequestHandler } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
+import { Prisma, PrismaClient } from "../.prisma/client";
 
-// Declare type for product parameter
-type product = {
-  id: number;
-  quantity: number | null;
-};
+import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
+import { CustomError } from "../utils/CustomError";
+import { getInvoiceIdNumber } from "../utils/invoiceIdNumber";
+import { checkMissingFields } from "../utils/validateAuth";
 
 const orderClient = new PrismaClient().order;
 
-const getAllOrders = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+type Product = { id: number; quantity: number | null };
+
+type OrderRequestBody = {
+  customerId: number;
+  products: Product[];
+  invoice: string;
+};
+
+type OrderRequestHandler = RequestHandler<
+  ParamsDictionary,
+  unknown,
+  OrderRequestBody
+>;
+
+const getAllOrders: RequestHandler = async (req, res, next) => {
   try {
     const allOrders = await orderClient.findMany({
       include: {
@@ -32,7 +38,7 @@ const getAllOrders = async (
   }
 };
 
-const getOrder = async (req: Request, res: Response, next: NextFunction) => {
+const getOrder: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const order = await orderClient.findUnique({
@@ -54,7 +60,7 @@ const getOrder = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const createOrder = async (req: Request, res: Response, next: NextFunction) => {
+const createOrder: OrderRequestHandler = async (req, res, next) => {
   const { customerId, products, invoice } = req.body;
 
   // If any required field is missing, return an error
@@ -78,7 +84,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
         },
         // Loop through products, connect each by id & add respective quantities
         products: {
-          create: products.map((product: product) => ({
+          create: products.map((product: Product) => ({
             product: { connect: { id: product.id } },
             quantity: product?.quantity || 1,
           })),
@@ -105,7 +111,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const updateOrder = async (req: Request, res: Response, next: NextFunction) => {
+const updateOrder: OrderRequestHandler = async (req, res, next) => {
   const { id } = req.params;
   const { customerId, products, invoice } = req.body;
   // Calculate invoice `idNumber` if `invoice` is true
@@ -131,7 +137,7 @@ const updateOrder = async (req: Request, res: Response, next: NextFunction) => {
         // Loop through products, update each by id & add respective quantities
         products: {
           deleteMany: { orderId: parseInt(id) },
-          create: products.map((product: product) => ({
+          create: products.map((product: Product) => ({
             product: { connect: { id: product.id } },
             quantity: product?.quantity || 1,
           })),
@@ -160,7 +166,7 @@ const updateOrder = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const deleteOrder = async (req: Request, res: Response, next: NextFunction) => {
+const deleteOrder: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
     const order = await orderClient.delete({
@@ -180,4 +186,4 @@ const deleteOrder = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { getAllOrders, getOrder, createOrder, updateOrder, deleteOrder };
+export { createOrder, deleteOrder, getAllOrders, getOrder, updateOrder };

@@ -1,15 +1,17 @@
-import { Request, Response, NextFunction } from "express";
-import { PrismaClient, Prisma } from "../.prisma/client";
-import PrismaErrorHandler from "../middleware/PrismaErrorHandler";
-import CustomError from "../utils/CustomError";
+import { RequestHandler } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
+import { Prisma, PrismaClient } from "../.prisma/client";
+
+import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
+import { CustomError } from "../utils/CustomError";
 
 const invoiceClient = new PrismaClient().invoice;
 
-const getAllInvoices = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+type InvoiceReqBody = {
+  paid: boolean;
+};
+
+const getAllInvoices: RequestHandler = async (req, res, next) => {
   try {
     const allInvoices = await invoiceClient.findMany({
       include: {
@@ -22,11 +24,7 @@ const getAllInvoices = async (
   }
 };
 
-const getInvoiceById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const getInvoiceById: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const invoice = await invoiceClient.findUnique({
@@ -39,7 +37,7 @@ const getInvoiceById = async (
     if (!invoice) {
       const error = new CustomError(
         `Invoice with id ${id} does not exist.`,
-        400
+        400,
       );
       console.error(error);
       res.status(error.statusCode).send({ message: error.message });
@@ -65,11 +63,11 @@ const getInvoicesFromDate = async (date: Date) => {
   }
 };
 
-const updateInvoice = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const updateInvoice: RequestHandler<
+  ParamsDictionary,
+  unknown,
+  InvoiceReqBody
+> = async (req, res, next) => {
   const { id } = req.params;
   const { paid } = req.body;
 
@@ -92,11 +90,7 @@ const updateInvoice = async (
   }
 };
 
-const deleteInvoice = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const deleteInvoice: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   try {
     const invoice = await invoiceClient.delete({
@@ -115,9 +109,9 @@ const deleteInvoice = async (
 };
 
 export {
-  getAllInvoices,
-  getInvoicesFromDate,
-  getInvoiceById,
-  updateInvoice,
   deleteInvoice,
+  getAllInvoices,
+  getInvoiceById,
+  getInvoicesFromDate,
+  updateInvoice,
 };

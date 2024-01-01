@@ -1,16 +1,20 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import CustomError from "../utils/CustomError";
+import { CustomError } from "../utils/CustomError";
 
-const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+export const verifyToken = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // Get request header
-  const authHeader = req.headers["authorization"];
+  const authHeader = req.headers.authorization;
 
   // Check if authorization header exists & is well formatted
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     const error = new CustomError(
       "Unauthorized: Authorization token required",
-      401
+      401,
     );
     console.error(error);
     res.status(error.statusCode).send({ message: error.message });
@@ -27,7 +31,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
       if (err) {
         const error = new CustomError(
           "Forbidden: Authorization token not valid or expired",
-          403
+          403,
         );
         console.error(error);
         return res.status(error.statusCode).send({ message: error.message });
@@ -41,5 +45,3 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
       next();
     });
 };
-
-export default verifyToken;

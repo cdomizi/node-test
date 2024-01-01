@@ -2,7 +2,7 @@ import { getInvoicesFromDate } from "../controllers/invoices.controller";
 
 let idNumber: null | string;
 
-const getInvoiceIdNumber = async () => {
+export const getInvoiceIdNumber = async () => {
   try {
     // Set Date as the present day at 00:00
     const today = new Date();
@@ -16,7 +16,7 @@ const getInvoiceIdNumber = async () => {
 
     // Get the count of today's invoices
     const todaysInvoices = await getInvoicesFromDate(today);
-    const todaysInvoicesCount = await todaysInvoices?.length;
+    const todaysInvoicesCount = todaysInvoices?.length;
 
     // Add the number to `idNumber`
     idNumber += !todaysInvoicesCount
@@ -29,5 +29,3 @@ const getInvoiceIdNumber = async () => {
   // Only return `idNumber` if it is the right length
   return idNumber?.length === 14 ? idNumber : null;
 };
-
-export default getInvoiceIdNumber;
