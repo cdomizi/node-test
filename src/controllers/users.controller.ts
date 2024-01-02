@@ -10,7 +10,7 @@ import {
 } from "../controllers/auth.controller";
 import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
 import { CustomError } from "../utils/CustomError";
-import { formatToNumber } from "../utils/formatToNumber";
+import { formatToNumber } from "../utils/formattingHelper";
 import { generateToken } from "../utils/generateToken";
 import {
   checkMissingFields,

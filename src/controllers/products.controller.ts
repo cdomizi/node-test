@@ -4,7 +4,7 @@ import { Prisma, PrismaClient } from "../.prisma/client";
 
 import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
 import { CustomError } from "../utils/CustomError";
-import { formatToNumber } from "../utils/formatToNumber";
+import { formatToNumber } from "../utils/formattingHelper";
 import { checkMissingFields } from "../utils/validateAuth";
 
 const productClient = new PrismaClient().product;
