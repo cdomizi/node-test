@@ -1,21 +1,22 @@
-import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { RequestHandler } from "express";
 import { ParamsDictionary } from "express-serve-static-core";
+import { Prisma, PrismaClient } from "../.prisma/client";
 
 import {
   JWTCookie,
   accessTokenMaxAge,
   refreshTokenMaxAge,
-} from "@controllers/auth.controller";
-import { PrismaErrorHandler } from "@middleware/PrismaErrorHandler";
-import { CustomError } from "@utils/CustomError";
-import { generateToken } from "@utils/generateToken";
+} from "../controllers/auth.controller";
+import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
+import { CustomError } from "../utils/CustomError";
+import { formatToNumber } from "../utils/formatToNumber";
+import { generateToken } from "../utils/generateToken";
 import {
   checkMissingFields,
   checkPassword,
   decodeJWT,
-} from "@utils/validateAuth";
+} from "../utils/validateAuth";
 
 const userClient = new PrismaClient().user;
 
@@ -254,14 +255,16 @@ const confirmPassword: UserRequestHandler<UserData> = async (
 ) => {
   const { id, password } = req.body;
   const cookies = req?.cookies as JWTCookie;
-  const authToken = cookies?.jwt;
+  const authToken = cookies?.jwt || "hi";
 
   // Get user data
-  const userData = await userClient.findUnique({ where: { id: parseInt(id) } });
+  const userData = await userClient.findUnique({
+    where: { id: formatToNumber(id) },
+  });
 
   try {
     // Identify the user via data encoded in JWT cookie
-    const { username } = decodeJWT(authToken);
+    const { username } = decodeJWT(authToken) as { username: string };
 
     // Restrict method to the user itself
     if (username === userData?.username) {

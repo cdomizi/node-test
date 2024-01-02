@@ -1,4 +1,4 @@
-import { getInvoicesFromDate } from "@controllers/invoices.controller";
+import { getInvoicesFromDate } from "../controllers/invoices.controller";
 
 let idNumber: null | string;
 

@@ -1,9 +1,9 @@
-import { Prisma, PrismaClient } from "@prisma/client";
 import { RequestHandler } from "express";
 import { ParamsDictionary } from "express-serve-static-core";
+import { Prisma, PrismaClient } from "../.prisma/client";
 
-import { PrismaErrorHandler } from "@middleware/PrismaErrorHandler";
-import { CustomError } from "@utils/CustomError";
+import { PrismaErrorHandler } from "../middleware/PrismaErrorHandler";
+import { CustomError } from "../utils/CustomError";
 
 const invoiceClient = new PrismaClient().invoice;
 

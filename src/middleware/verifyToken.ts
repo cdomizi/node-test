@@ -1,6 +1,6 @@
-import { CustomError } from "@utils/CustomError";
 import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
+import { CustomError } from "../utils/CustomError";
 
 export const verifyToken: RequestHandler = (req, res, next) => {
   // Get request header
