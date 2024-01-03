@@ -255,7 +255,7 @@ const confirmPassword: UserRequestHandler<UserData> = async (
 ) => {
   const { id, password } = req.body;
   const cookies = req?.cookies as JWTCookie;
-  const authToken = cookies?.jwt || "hi";
+  const authToken = cookies?.jwt;
 
   // Get user data
   const userData = await userClient.findUnique({
@@ -263,8 +263,11 @@ const confirmPassword: UserRequestHandler<UserData> = async (
   });
 
   try {
+    // Throw 403 error if JWT does not exist
+    if (!authToken) throw new CustomError("Forbidden", 403);
+
     // Identify the user via data encoded in JWT cookie
-    const { username } = decodeJWT(authToken) as { username: string };
+    const { username } = decodeJWT(authToken)!;
 
     // Restrict method to the user itself
     if (username === userData?.username) {
