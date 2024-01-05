@@ -34,6 +34,11 @@ const getAllCustomers: RequestHandler = async (req, res, next) => {
 const getCustomer: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    if (!id) {
+      throw new CustomError("Bad request: Customer id not provided", 400);
+    }
+
     const customer = await customerClient.findUnique({
       where: { id: parseInt(id) },
       include: { orders: true },
@@ -53,8 +58,9 @@ const getCustomer: RequestHandler = async (req, res, next) => {
 };
 
 const createCustomer: CustomerRequestHandler = async (req, res, next) => {
-  const { firstName, lastName, address, email } = req.body;
   try {
+    const { firstName, lastName, address, email } = req.body;
+
     // If any required field is missing, return an error
     const missingFieldsError = checkMissingFields({
       firstName,
@@ -86,9 +92,10 @@ const createCustomer: CustomerRequestHandler = async (req, res, next) => {
 };
 
 const updateCustomer: CustomerRequestHandler = async (req, res, next) => {
-  const { id } = req.params;
-  const { firstName, lastName, address, email } = req.body;
   try {
+    const { id } = req.params;
+    const { firstName, lastName, address, email } = req.body;
+
     const customer = await customerClient.update({
       where: { id: parseInt(id) },
       data: {
@@ -108,8 +115,13 @@ const updateCustomer: CustomerRequestHandler = async (req, res, next) => {
 };
 
 const deleteCustomer: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
   try {
+    const { id } = req.params;
+
+    if (!id) {
+      throw new CustomError("Bad request: Customer id not provided", 400);
+    }
+
     const customer = await customerClient.delete({
       where: { id: parseInt(id) },
       include: { orders: true },

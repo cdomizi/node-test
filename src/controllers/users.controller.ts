@@ -31,10 +31,10 @@ type UserRequestHandler<TBody = UserRequestBody> = RequestHandler<
 >;
 
 const getAllUsers: RequestHandler = async (req, res, next) => {
-  // Get user admin status
-  const adminUser = req.user?.isAdmin;
-
   try {
+    // Get user admin status
+    const adminUser = req.user?.isAdmin;
+
     // Restrict method to admins only
     if (adminUser) {
       const allUsers = await userClient.findMany();
@@ -53,9 +53,9 @@ const getAllUsers: RequestHandler = async (req, res, next) => {
 };
 
 const getUserByUsername: RequestHandler = async (req, res, next) => {
-  const { username } = req.params;
-
   try {
+    const { username } = req.params;
+
     const user = await userClient.findUnique({
       where: { username: username },
     });
@@ -85,9 +85,9 @@ const getUserByUsername: RequestHandler = async (req, res, next) => {
 };
 
 const createUser: UserRequestHandler = async (req, res, next) => {
-  const { username, password, isAdmin = false } = req.body;
-
   try {
+    const { username, password, isAdmin = false } = req.body;
+
     // If any required field is missing, return an error
     const missingFieldsError = checkMissingFields({ username, password });
     if (missingFieldsError) {
@@ -170,22 +170,26 @@ const createUser: UserRequestHandler = async (req, res, next) => {
 };
 
 const updateUser: UserRequestHandler = async (req, res, next) => {
-  const { id } = req.params;
-  const {
-    username: newUsername = null,
-    password = null,
-    isAdmin = null,
-  } = req.body;
-
-  // Get request user username & admin status
-  const adminUser = req.user?.isAdmin;
-  const reqUsername = req.user?.username;
-
-  // Get user username
-  const userData = await userClient.findUnique({ where: { id: parseInt(id) } });
-  const username = userData?.username;
-
   try {
+    const { id } = req.params;
+    const {
+      username: newUsername = null,
+      password = null,
+      isAdmin = null,
+    } = req.body;
+
+    // Get request user username & admin status
+    const adminUser = req.user?.isAdmin;
+    const reqUsername = req.user?.username;
+
+    if (!id) throw new CustomError("Bad Request: Missing user id");
+
+    // Get user username
+    const userData = await userClient.findUnique({
+      where: { id: parseInt(id) },
+    });
+    const username = userData?.username;
+
     // Restrict method to admins and the user itself
     if (
       (adminUser || username === reqUsername) &&
@@ -194,6 +198,8 @@ const updateUser: UserRequestHandler = async (req, res, next) => {
     ) {
       // Hash password
       const hashedPassword = password && (await bcrypt.hash(password, 10));
+
+      if (!id) throw new CustomError("Bad Request: Missing user id");
 
       const user = await userClient.update({
         where: { id: parseInt(id) },
@@ -218,17 +224,21 @@ const updateUser: UserRequestHandler = async (req, res, next) => {
 };
 
 const deleteUser: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
-
-  // Get request user username & role
-  const adminUser = req.user?.isAdmin;
-  const reqUsername = req.user?.username;
-
-  // Get user username
-  const userData = await userClient.findUnique({ where: { id: parseInt(id) } });
-  const username = userData?.username;
-
   try {
+    const { id } = req.params;
+
+    if (!id) throw new CustomError("Bad Request: Missing order id");
+
+    // Get request user username & role
+    const adminUser = req.user?.isAdmin;
+    const reqUsername = req.user?.username;
+
+    // Get user username
+    const userData = await userClient.findUnique({
+      where: { id: parseInt(id) },
+    });
+    const username = userData?.username;
+
     // Restrict method to admins and the user itself
     if (adminUser || username === reqUsername) {
       const user = await userClient.delete({
@@ -253,16 +263,16 @@ const confirmPassword: UserRequestHandler<UserData> = async (
   res,
   next,
 ) => {
-  const { id, password } = req.body;
-  const cookies = req?.cookies as JWTCookie;
-  const authToken = cookies?.jwt;
-
-  // Get user data
-  const userData = await userClient.findUnique({
-    where: { id: formatToNumber(id) },
-  });
-
   try {
+    const { id, password } = req.body;
+    const cookies = req?.cookies as JWTCookie;
+    const authToken = cookies?.jwt;
+
+    // Get user data
+    const userData = await userClient.findUnique({
+      where: { id: formatToNumber(id) },
+    });
+
     // Throw 403 error if JWT does not exist
     if (!authToken) throw new CustomError("Forbidden", 403);
 

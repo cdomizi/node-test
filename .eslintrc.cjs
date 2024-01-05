@@ -9,6 +9,7 @@ module.exports = {
     "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:prettier/recommended",
   ],
+  ignorePatterns: ["*.cjs"],
   overrides: [
     {
       env: {
@@ -27,7 +28,6 @@ module.exports = {
     project: ["./tsconfig.json"],
   },
   plugins: ["@typescript-eslint"],
-  ignorePatterns: ["*.js"],
   rules: {
     "no-unused-vars": 0,
     "@typescript-eslint/no-unused-vars": 2,

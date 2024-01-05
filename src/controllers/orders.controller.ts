@@ -41,6 +41,9 @@ const getAllOrders: RequestHandler = async (req, res, next) => {
 const getOrder: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    if (!id) throw new CustomError("Bad Request: Missing order id");
+
     const order = await orderClient.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -61,18 +64,18 @@ const getOrder: RequestHandler = async (req, res, next) => {
 };
 
 const createOrder: OrderRequestHandler = async (req, res, next) => {
-  const { customerId, products, invoice } = req.body;
-
-  // If any required field is missing, return an error
-  const missingFieldsError = checkMissingFields({ customerId, products });
-  if (missingFieldsError) {
-    console.error(missingFieldsError);
-    return res
-      .status(missingFieldsError.statusCode)
-      .send({ message: missingFieldsError.message });
-  }
-
   try {
+    const { customerId, products, invoice } = req.body;
+
+    // If any required field is missing, return an error
+    const missingFieldsError = checkMissingFields({ customerId, products });
+    if (missingFieldsError) {
+      console.error(missingFieldsError);
+      return res
+        .status(missingFieldsError.statusCode)
+        .send({ message: missingFieldsError.message });
+    }
+
     // Calculate invoice `idNumber` if `invoice` is true
     const idNumber = invoice ? await getInvoiceIdNumber() : null;
 
@@ -112,12 +115,14 @@ const createOrder: OrderRequestHandler = async (req, res, next) => {
 };
 
 const updateOrder: OrderRequestHandler = async (req, res, next) => {
-  const { id } = req.params;
-  const { customerId, products, invoice } = req.body;
-  // Calculate invoice `idNumber` if `invoice` is true
-  const idNumber = invoice ? await getInvoiceIdNumber() : null;
-
   try {
+    const { id } = req.params;
+    const { customerId, products, invoice } = req.body;
+    // Calculate invoice `idNumber` if `invoice` is true
+    const idNumber = invoice ? await getInvoiceIdNumber() : null;
+
+    if (!id) throw new CustomError("Bad Request: Missing order id");
+
     // Check if an invoice for the order
     const checkInvoice = async () => {
       const orderData = await orderClient.findFirst({
@@ -167,8 +172,11 @@ const updateOrder: OrderRequestHandler = async (req, res, next) => {
 };
 
 const deleteOrder: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
   try {
+    const { id } = req.params;
+
+    if (!id) throw new CustomError("Bad Request: Missing order id");
+
     const order = await orderClient.delete({
       where: { id: parseInt(id) },
       include: {

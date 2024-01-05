@@ -6,7 +6,7 @@ import logger from "morgan";
 import { corsOptions } from "./config/corsOptions";
 
 import { PrismaErrorHandler } from "./middleware/PrismaErrorHandler";
-import { routes } from "./routes/index";
+import { routes } from "./routes";
 
 export const app = express();
 

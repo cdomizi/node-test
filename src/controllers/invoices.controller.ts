@@ -27,6 +27,9 @@ const getAllInvoices: RequestHandler = async (req, res, next) => {
 const getInvoiceById: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    if (!id) throw new CustomError("Bad Request: Missing invoice id");
+
     const invoice = await invoiceClient.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -68,10 +71,12 @@ const updateInvoice: RequestHandler<
   unknown,
   InvoiceReqBody
 > = async (req, res, next) => {
-  const { id } = req.params;
-  const { paid } = req.body;
-
   try {
+    const { id } = req.params;
+    const { paid } = req.body;
+
+    if (!id) throw new CustomError("Bad Request: Missing invoice id");
+
     const invoice = await invoiceClient.update({
       where: { id: parseInt(id) },
       data: {
@@ -91,8 +96,11 @@ const updateInvoice: RequestHandler<
 };
 
 const deleteInvoice: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
   try {
+    const { id } = req.params;
+
+    if (!id) throw new CustomError("Bad Request: Missing invoice id");
+
     const invoice = await invoiceClient.delete({
       where: { id: parseInt(id) },
       include: {

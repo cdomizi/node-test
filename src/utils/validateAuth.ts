@@ -36,7 +36,7 @@ const checkPassword = async (submittedPassword: string, password: string) => {
 // Decode JWT
 const decodeJWT = (token: string) => {
   try {
-    const base64URL = token.split(".")[1];
+    const base64URL = token.split(".")[1]!;
     const decodedData = atob(base64URL);
     const payload = JSON.parse(decodedData) as JWTPayload;
     return payload;

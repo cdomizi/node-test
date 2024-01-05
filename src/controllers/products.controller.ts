@@ -43,6 +43,9 @@ const getAllProducts: RequestHandler = async (req, res, next) => {
 const getProduct: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    if (!id) throw new CustomError("Bad Request: Missing product id");
+
     const product = await productClient.findUnique({
       where: { id: parseInt(id) },
       include: { orders: true },
@@ -62,19 +65,20 @@ const getProduct: RequestHandler = async (req, res, next) => {
 };
 
 const createProduct: ProductRequestHandler = async (req, res, next) => {
-  const {
-    title,
-    brand,
-    category,
-    price,
-    discountPercentage,
-    rating,
-    stock = 0,
-    description,
-    thumbnail,
-    images = [],
-  } = req.body;
   try {
+    const {
+      title,
+      brand,
+      category,
+      price,
+      discountPercentage,
+      rating,
+      stock = 0,
+      description,
+      thumbnail,
+      images = [],
+    } = req.body;
+
     // If any required field is missing, return an error
     const missingFieldsError = checkMissingFields({ title, price });
     if (missingFieldsError) {
@@ -107,20 +111,23 @@ const createProduct: ProductRequestHandler = async (req, res, next) => {
 };
 
 const updateProduct: ProductRequestHandler = async (req, res, next) => {
-  const { id } = req.params;
-  const {
-    title,
-    brand,
-    category,
-    price,
-    discountPercentage,
-    rating,
-    stock,
-    description,
-    thumbnail,
-    images,
-  } = req.body;
   try {
+    const { id } = req.params;
+    const {
+      title,
+      brand,
+      category,
+      price,
+      discountPercentage,
+      rating,
+      stock,
+      description,
+      thumbnail,
+      images,
+    } = req.body;
+
+    if (!id) throw new CustomError("Bad Request: Missing product id");
+
     const product = await productClient.update({
       where: { id: parseInt(id) },
       data: {
@@ -146,8 +153,11 @@ const updateProduct: ProductRequestHandler = async (req, res, next) => {
 };
 
 const deleteProduct: RequestHandler = async (req, res, next) => {
-  const { id } = req.params;
   try {
+    const { id } = req.params;
+
+    if (!id) throw new CustomError("Bad Request: Missing product id");
+
     const product = await productClient.delete({
       where: { id: parseInt(id) },
     });
